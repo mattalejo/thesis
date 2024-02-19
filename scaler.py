@@ -1,7 +1,7 @@
 import pandas as pd
 import torch
 
-class Scaler():
+class Scaler:
     def __init__(self, df, col_name="Log Returns"):
         self.df = df
         self.col_name = col_name
@@ -13,4 +13,3 @@ class Scaler():
     
     def inverse_fit(self, tensor):
         return (tensor*self.std) + self.mean
-    

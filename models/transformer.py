@@ -14,7 +14,7 @@ class Transformer(nn.Module):
         num_layers: int = 4,
         dropout: float = 0.1,
         nhead: int = 4,
-        activation: str = "gelu",
+        activation: str = "relu",
         batch_first: bool = True
     ):
         super(Transformer, self).__init__()

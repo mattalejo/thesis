@@ -13,16 +13,16 @@ def log_returns(
     seq_len: int,
     horizon: int,
     ticker: str = "PSEI.PS",
-    start_date: str = "2000-01-01",
+    start_date: str = "2010-01-01",
     end_date: str = "2020-12-31"
 ):
     """
     Load the Log Returns dataset to a pd.DataFrame object
     """
-    idx = pd.date_range(start_date, end_date)
-    final_idx = pd.date_range("2010-01-01", "2019-12-31")
+    idx = pd.date_range("1990-01-01", "2022-12-31")
+    final_idx = pd.date_range(start_date, end_date)
 
-    df = yf.download([ticker], start_date, end_date)
+    df = yf.download([ticker], "1990-01-01", "2022-12-31")
     print(df.head())
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
@@ -62,10 +62,10 @@ def log_returns_w_close(
     """
     Load the Log Returns dataset to a pd.DataFrame object
     """
-    idx = pd.date_range(start_date, end_date)
-    final_idx = pd.date_range("2010-01-01", "2019-12-31")
+    idx = pd.date_range("1990-01-01", "2022-12-31")
+    final_idx = pd.date_range(start_date, end_date)
 
-    df = yf.download([ticker], start_date, end_date)
+    df = yf.download([ticker], "1990-01-01", "2022-12-31")
     print(df.head())
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
@@ -109,15 +109,13 @@ def log_returns_w_close(
     scaler)  # Scaler only for returns
 
 
-
-
-
 def train_test_split(df, split: float = 0.8):
     train_split = int(len(df)*0.8)
     df_train = df[:train_split]
     df_test = df[train_split:]
 
     return df_train, df_test
+
 
 def load_dataset(
     df,
@@ -127,7 +125,6 @@ def load_dataset(
     series = pd.DataFrame(df)
     dataset_df = pd.concat([series.shift(i) for i in range(-horizon, seq_len)])
     return dataset_df
-
 
 
 def create_inout_sequences(
