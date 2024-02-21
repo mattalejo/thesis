@@ -18,7 +18,25 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x):
-        return x + self.pe[:x.size(0), :]
+        return self.pe[:x.size(0), :]
+
+
+class Time2Vec(nn.Module):
+    def __init__(self, feature_size):
+        super(Time2Vec, self).__init__()
+        self.feature_size = feature_size
+        self.weights = nn.Parameter(torch.Tensor(self.feature_size, 2))
+        self.bias = nn.Parameter(torch.Tensor(self.feature_size))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.weights)
+        nn.init.zeros_(self.bias)
+
+    def forward(self, x):
+        time_linear = self.weights[:, 0:1] * x + self.bias
+        time_periodic = torch.sin(x * self.weights[:, 1:2])
+        return torch.cat((time_linear, time_periodic), -1)
 
 
 class qTokenEmbedding(nn.Module):

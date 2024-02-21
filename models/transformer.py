@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from layers.embed import PositionalEncoding
+from layers.embed import PositionalEncoding, Time2Vec
 
 
 class Transformer(nn.Module):
@@ -15,12 +15,16 @@ class Transformer(nn.Module):
         dropout: float = 0.1,
         nhead: int = 4,
         activation: str = "relu",
-        batch_first: bool = True
+        batch_first: bool = True,
+        embed_mode: str = "t2v"
     ):
         super(Transformer, self).__init__()
         self.model_type = "Transformer"
         # self.src_mask = None
-        self.pos_encoder = PositionalEncoding(d_model)
+        if embed_mode = "pe":
+            self.pos_encoder = PositionalEncoding(d_model)
+        elif embed_mode = "t2v":
+            self.pos_encoder = Time2Vec(d_model)
         # self.encoder_layer = nn.TransformerEncoderLayer(
         #     d_model=d_model, nhead=encoder_head, dropout=dropout, activation=activation
         # )
@@ -34,7 +38,7 @@ class Transformer(nn.Module):
         self.decoder = nn.Linear(d_model, 1)
         self.transformer = nn.Transformer(d_model=d_model, nhead=nhead, num_encoder_layers=num_layers, num_decoder_layers=num_layers, dropout=dropout, activation=activation, batch_first=batch_first)
 
-    def forward(self, src, tgt):
+    def forward(self, src, tgt, src_time, tgt_time):
         # if self.src_mask is None or self.src_mask.size(0) != len(src):
         #     mask = self._generate_square_subsequent_mask(len(src))
         #     self.src_mask = mask
@@ -45,8 +49,8 @@ class Transformer(nn.Module):
         # output = self.decoder(output)
         # print(f"output shape: {output.shape}")
 
-        src = self.pos_encoder(src)
-        tgt = self.pos_encoder(tgt)
+        src = src + self.pos_encoder(src_time)
+        tgt = tgt + self.pos_encoder(tgt)
         output = self.transformer(src, tgt)
         output = self.decoder(output)
 
