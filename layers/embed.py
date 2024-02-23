@@ -25,7 +25,7 @@ class Time2Vec(nn.Module):
     def __init__(self, feature_size):
         super(Time2Vec, self).__init__()
         self.feature_size = feature_size
-        self.weights = nn.Parameter(torch.Tensor(self.feature_size, 2))
+        self.weights = nn.Parameter(torch.Tensor(self.feature_size))
         self.bias = nn.Parameter(torch.Tensor(self.feature_size))
         self.reset_parameters()
 
@@ -35,7 +35,7 @@ class Time2Vec(nn.Module):
 
     def forward(self, x, x_time):
         time_linear = self.weights * x_time + self.bias
-        time_linear[:, 1:2] = torch.sin(x_time * self.weights[:, 1:2])
+        time_linear[:, 1:2] = torch.sin(time_linear[:, 1:2])
         print(time_linear,time_linear.shape)
 
         return x + time_linear
