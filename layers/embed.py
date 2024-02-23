@@ -28,8 +28,8 @@ class Time2Vec(nn.Module):
         self.seq_len = seq_len
         self.w0 = nn.Parameter(torch.randn(1, 2)) 
         self.b0 = nn.Parameter(torch.randn(1))
-        self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
-        self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
+        self.w = nn.Parameter(torch.Tensor(self.d_model-1, 2))
+        self.b = nn.Parameter(torch.Tensor(self.d_model-1))
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -42,4 +42,3 @@ class Time2Vec(nn.Module):
         t2v[:, 1::] = torch.sin(x_time * self.w + self.b0)
         t2v = t2v.unsqueeze(0).transpose(0, 1)
         return x + t2v
-        
