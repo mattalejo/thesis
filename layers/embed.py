@@ -24,13 +24,13 @@ class PositionalEncoding(nn.Module):
 class Time2Vec(nn.Module):
     def __init__(self, d_model, seq_len=64):
         super(Time2Vec, self).__init__()
-            self.d_model = d_model
-            self.seq_len = seq_len
-            self.w0 =nn.Parameter(torch.randn(1, 2)) 
-            self.b0 =nn.Parameter(torch.randn(1))
-            self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
-            self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
-            self.reset_parameters()
+        self.d_model = d_model
+        self.seq_len = seq_len
+        self.w0 =nn.Parameter(torch.randn(1, 2)) 
+        self.b0 =nn.Parameter(torch.randn(1))
+        self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
+        self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
+        self.reset_parameters()
 
     def reset_parameters(self):
         nn.init.xavier_uniform_(self.w)
