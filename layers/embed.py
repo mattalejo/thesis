@@ -25,8 +25,8 @@ class Time2Vec(nn.Module):
     def __init__(self, feature_size):
         super(Time2Vec, self).__init__()
         self.feature_size = feature_size
-        self.w0 =nn.Parameter(torch.Tensor(1, 2)) 
-        self.w0 =nn.Parameter(torch.Tensor(1))
+        self.w0 =nn.Parameter(torch.randn(1, 2)) 
+        self.w0 =nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
         self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
         self.reset_parameters()
@@ -34,8 +34,6 @@ class Time2Vec(nn.Module):
     def reset_parameters(self):
         nn.init.xavier_uniform_(self.w)
         nn.init.zeros_(self.b)
-        nn.init.xavier_uniform_(self.w0)
-        nn.init.zeros_(self.b0)
 
     def forward(self, x, x_time):
         time_linear = self.w0 * x_time + self.b0
