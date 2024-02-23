@@ -29,7 +29,7 @@ def train(
 ):
     X,  X_time, y, y_time, scaler = prep_data.log_returns(seq_len=seq_len, horizon=horizon)
 
-    X, y = scaler.fit(X), scaler_fit(y)
+    X, y = scaler.fit(X), scaler.fit(y)
 
     X_train, X_test = prep_data.train_test_split(X)
     X_train_time, X_test_time = prep_data.train_test_split(X_time)
