@@ -26,7 +26,7 @@ class Time2Vec(nn.Module):
         super(Time2Vec, self).__init__()
         self.feature_size = feature_size
         self.w0 =nn.Parameter(torch.randn(1, 2)) 
-        self.w0 =nn.Parameter(torch.randn(1))
+        self.b0 =nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
         self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
         self.reset_parameters()
