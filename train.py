@@ -83,7 +83,7 @@ def train(
             y_train_pred = torch.cat(
                 (
                     y_train_pred.cpu(), 
-                    scaler.inverse_fit(y_pred.squeeze(2).squeeze(1).cpu())
+                    scaler.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu()
                 ), 
                 0
             )
@@ -108,7 +108,7 @@ def train(
                 tgt_time=y_test_time
             )
             
-            df_test[f"epoch_{epoch}"] = scaler.inverse_fit(y_test_pred.cpu().squeeze(2).squeeze(1).detach().numpy())
+            df_test[f"epoch_{epoch}"] = scaler.inverse_fit(y_test_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
 
             test_loss = loss(y_test_pred, y_test)
             torch.cuda.empty_cache() 
