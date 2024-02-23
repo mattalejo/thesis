@@ -36,4 +36,5 @@ class Time2Vec(nn.Module):
     def forward(self, x, x_time):
         time_linear = self.weights[:, 0:1] * x_time + self.bias
         time_periodic = torch.sin(x_time * self.weights[:, 1:2])
+        print((x + torch.cat((time_linear, time_periodic), -1)).shape)
         return x + torch.cat((time_linear, time_periodic), -1)
