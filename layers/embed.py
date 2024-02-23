@@ -21,21 +21,22 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:x_time.size(0), :]
 
 
-class Time2Vec(nn.Module):
-    def __init__(self, feature_size):
-        super(Time2Vec, self).__init__()
-        self.feature_size = feature_size
-        self.weights = nn.Parameter(torch.Tensor(self.feature_size))
-        self.bias = nn.Parameter(torch.Tensor(self.feature_size))
-        self.reset_parameters()
+def t2v(tau, f, out_features, w, b, w0, b0, arg=None):
+    
 
-    def reset_parameters(self):
-        nn.init.xavier_uniform_(self.weights)
-        nn.init.zeros_(self.bias)
+class SineActivation(nn.Module):
+    def __init__(self, in_features, out_features):
+        super(SineActivation, self).__init__()
+        self.out_features = out_features
+        self.w0 = nn.parameter.Parameter(torch.randn(in_features, 1))
+        self.b0 = nn.parameter.Parameter(torch.randn(1))
+        self.w = nn.parameter.Parameter(torch.randn(in_features, out_features-1))
+        self.b = nn.parameter.Parameter(torch.randn(out_features-1))
+        self.f = torch.sin
 
     def forward(self, x, x_time):
-        time_linear = self.weights * x_time + self.bias
-        time_linear[:, 1:2] = torch.sin(time_linear[:, 1:2])
-        print(time_linear,time_linear.shape)
-
-        return x + time_linear
+        #print(w.shape, t1.shape, b.shape)
+        v1 = torch.sin(torch.matmul(x_time, self.w) + self.b)
+        v2 = torch.matmul(x_time, self.w0) + b0
+        #print(v1.shape)
+        return x + torch.cat([v1, v2], -1)
