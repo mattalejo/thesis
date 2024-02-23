@@ -21,9 +21,9 @@ class Transformer(nn.Module):
         super(Transformer, self).__init__()
         self.model_type = "Transformer"
         # self.src_mask = None
-        if embed_mode = "pe":
+        if embed_mode == "pe":
             self.pos_encoder = PositionalEncoding(d_model)
-        elif embed_mode = "t2v":
+        elif embed_mode == "t2v":
             self.pos_encoder = Time2Vec(d_model)
         # self.encoder_layer = nn.TransformerEncoderLayer(
         #     d_model=d_model, nhead=encoder_head, dropout=dropout, activation=activation

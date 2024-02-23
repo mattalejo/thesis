@@ -27,10 +27,11 @@ def log_returns(
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
 
-    df["Timestamp"] = int(df.index.astype(int)/86400)
+    df["Timestamp"] = df.index.astype(int)
+    df["Timestamp"] = df["Timestamp"].apply(lambda x: float(x))/(86400*1_000_000_000)
     df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
 
-    returns = pd.DataFrame(df["Log Returns"]) 
+    returns = pd.DataFrame(df[["Log Returns", "Timestamp"]]) 
     # print(returns.tail())
     # print(returns.shift(1).tail())
 
