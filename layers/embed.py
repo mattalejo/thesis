@@ -24,7 +24,7 @@ class PositionalEncoding(nn.Module):
 class Time2Vec(nn.Module):
     def __init__(self, feature_size):
         super(Time2Vec, self).__init__()
-        self.feature_size = feature_size
+        self.feature_size = int(feature_size/2)
         self.weights = nn.Parameter(torch.Tensor(self.feature_size, 2))
         self.bias = nn.Parameter(torch.Tensor(self.feature_size))
         self.reset_parameters()
