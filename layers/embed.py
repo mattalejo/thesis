@@ -32,8 +32,10 @@ class Time2Vec(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        nn.init.xavier_uniform_(self.weights)
-        nn.init.zeros_(self.bias)
+        nn.init.xavier_uniform_(self.w)
+        nn.init.zeros_(self.b)
+        nn.init.xavier_uniform_(self.w0)
+        nn.init.zeros_(self.b0)
 
     def forward(self, x, x_time):
         time_linear = self.w0 * x_time + self.b0
