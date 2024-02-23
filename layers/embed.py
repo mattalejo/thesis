@@ -26,8 +26,8 @@ class Time2Vec(nn.Module):
         super(Time2Vec, self).__init__()
         self.d_model = d_model
         self.seq_len = seq_len
-        self.w0 =nn.Parameter(torch.randn(1, 2)) 
-        self.b0 =nn.Parameter(torch.randn(1))
+        self.w0 = nn.Parameter(torch.randn(1, 2)) 
+        self.b0 = nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
         self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
         self.reset_parameters()
@@ -42,24 +42,4 @@ class Time2Vec(nn.Module):
         t2v[:, 1::] = torch.sin(x_time * self.w + self.b0)
         t2v = t2v.unsqueeze(0).transpose(0, 1)
         return x + t2v
-
-
-class Time2Vec(nn.Module):
-    def __init__(self, feature_size):
-        super(Time2Vec, self).__init__()
-        self.feature_size = feature_size
-        self.w0 =nn.Parameter(torch.randn(1, 2)) 
-        self.b0 =nn.Parameter(torch.randn(1))
-        self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
-        self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        nn.init.xavier_uniform_(self.w)
-        nn.init.zeros_(self.b)
-
-    def forward(self, x, x_time):
-        time_linear = self.w0 * x_time + self.b0
-        time_periodic = torch.sin(x_time * self.w + self.b)
-        print((x + torch.cat((time_linear, time_periodic), -1)).shape)
-        return x + torch.cat((time_linear, time_periodic), -1)
+        
