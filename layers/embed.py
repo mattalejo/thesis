@@ -19,21 +19,24 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x, x_time):
         return x + self.pe[:x_time.size(0), :]
-    
+
 
 class Time2Vec(nn.Module):
-    def __init__(self, out_features):
+    def __init__(self, feature_size):
         super(Time2Vec, self).__init__()
-        self.out_features = out_features
-        self.w0 = nn.parameter.Parameter(torch.randn(1))
-        self.b0 = nn.parameter.Parameter(torch.randn(1))
-        self.w = nn.parameter.Parameter(torch.randn(out_features-1))
-        self.b = nn.parameter.Parameter(torch.randn(out_features-1))
-        self.f = torch.sin
+        self.feature_size = feature_size
+        self.w0 =nn.Parameter(torch.Tensor(1, 2)) 
+        self.w0 =nn.Parameter(torch.Tensor(1))
+        self.w = nn.Parameter(torch.Tensor(self.feature_size-1, 2))
+        self.b = nn.Parameter(torch.Tensor(self.feature_size-1))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.weights)
+        nn.init.zeros_(self.bias)
 
     def forward(self, x, x_time):
-        #print(w.shape, t1.shape, b.shape)
-        v1 = torch.sin(torch.matmul(x_time, self.w) + self.b)
-        v2 = torch.matmul(x_time, self.w0) + b0
-        #print(v1.shape)
-        return x + torch.cat([v1, v2], -1)
+        time_linear = self.w0 * x_time + self.b0
+        time_periodic = torch.sin(x_time * self.w + self.b)
+        print((x + torch.cat((time_linear, time_periodic), -1)).shape)
+        return x + torch.cat((time_linear, time_periodic), -1)
