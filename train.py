@@ -29,6 +29,8 @@ def train(
 ):
     X,  X_time, y, y_time, scaler = prep_data.log_returns(seq_len=seq_len, horizon=horizon)
 
+    X, y = scaler.fit(X), scaler_fit(y)
+
     X_train, X_test = prep_data.train_test_split(X)
     X_train_time, X_test_time = prep_data.train_test_split(X_time)
     y_train, y_test = prep_data.train_test_split(y)
@@ -41,10 +43,10 @@ def train(
     proc_time_list = []
     
     df_train = pd.DataFrame(
-        {"y": y_train.squeeze(2).squeeze(1).numpy()}
+        {"y": scaler.inverse_fit(y_train.squeeze(2).squeeze(1).numpy())}
     )
     df_test = pd.DataFrame(
-        {"y": y_test.squeeze(2).squeeze(1).numpy()}
+        {"y": scaler.inverse_fit(y_test.squeeze(2).squeeze(1).numpy())}
     )
     
     loader = DataLoader(
@@ -81,7 +83,7 @@ def train(
             y_train_pred = torch.cat(
                 (
                     y_train_pred.cpu(), 
-                    y_pred.squeeze(2).squeeze(1).cpu()
+                    scaler.inverse_fit(y_pred.squeeze(2).squeeze(1).cpu())
                 ), 
                 0
             )
@@ -106,7 +108,7 @@ def train(
                 tgt_time=y_test_time
             )
             
-            df_test[f"epoch_{epoch}"] = y_test_pred.cpu().squeeze(2).squeeze(1).detach().numpy()
+            df_test[f"epoch_{epoch}"] = scaler.inverse_fit(y_test_pred.cpu().squeeze(2).squeeze(1).detach().numpy())
 
             test_loss = loss(y_test_pred, y_test)
             torch.cuda.empty_cache() 
@@ -127,7 +129,7 @@ def train(
         }
     )
 
-    return model, loss_df, df_train, df_test
+    return model, loss_df, df_train, df_test, scaler
 
 
 def train_cumsum(
