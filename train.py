@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 import prep_data
-
+import time
 
 from sklearn.preprocessing import StandardScaler
 
@@ -27,14 +27,18 @@ def train(
     lr=1e-4,
     device="cpu"
 ):
-    X, y, scaler = prep_data.log_returns(seq_len=seq_len, horizon=horizon)
+    X,  X_time, y, y_time, scaler = prep_data.log_returns(seq_len=seq_len, horizon=horizon)
 
     X_train, X_test = prep_data.train_test_split(X)
+    X_train_time, X_test_time = prep_data.train_test_split(X_time)
     y_train, y_test = prep_data.train_test_split(y)
+    y_train_time, y_test_time = prep_data.train_test_split(y_time)
     
     # Initialize some DataFrames for recording stuff
     train_loss_list = []
     test_loss_list = []
+    wall_time_list = []
+    proc_time_list = []
     
     df_train = pd.DataFrame(
         {"y": y_train.squeeze(2).squeeze(1).numpy()}
@@ -44,7 +48,7 @@ def train(
     )
     
     loader = DataLoader(
-        list(zip(X_train, y_train)), 
+        list(zip(X_train, X_train_time, y_train, y_train_time)), 
         batch_size=batch_size
     )
     model = model.to(device)
@@ -54,13 +58,20 @@ def train(
     X_test, y_test = X_test.to(device), y_test.to(device)
 
     for epoch in range(max_epoch):
+        start_time_wall, start_time_proc = time.time(), time.process_time()
         model.train()
         total_loss = 0.
         y_train_pred = torch.Tensor()  # Whole sequence of train dataset prediction
         
-        for X_batch, y_batch in loader:
+        for X_batch, X_batch_time, y_batch, y_batch_time in loader:
+            start_time = time.time()
             # Forward pass and backpropagation
-            y_pred = model(X_batch.to(device), y_batch.to(device))  # y_pred: (batch_size, horizon, 1)
+            y_pred = model(
+                src=X_batch.to(device), 
+                tgt=y_batch.to(device), 
+                src_time=X_batch_time.to(device), 
+                tgt_time=y_batch_time.to(device)
+            )  # y_pred: (batch_size, horizon, 1)
             batch_loss = loss(y_pred, y_batch.to(device))
             total_loss += batch_loss
             backprop.zero_grad()
@@ -75,6 +86,11 @@ def train(
                 0
             )
             torch.cuda.empty_cache() 
+        end_time_wall, end_time_proc = time.time(), time.process_time()
+        wall_time = end_time_wall - start_time_wall
+        proc_time = end_time_proc - start_time_proc
+        wall_time_list.append(wall_time)
+        proc_time_list.append(proc_time)
 
         df_train[f"epoch_{epoch}"] = y_train_pred.detach().numpy()  # Save train predictions per epoch
         torch.cuda.empty_cache()
@@ -83,7 +99,12 @@ def train(
         with torch.no_grad():
             model.eval()
             
-            y_test_pred = model(X_test, y_test)
+            y_test_pred = model(
+                src=X_test, 
+                tgt=y_test, 
+                src_time=X_test_time, 
+                tgt_time=y_test_time
+            )
             
             df_test[f"epoch_{epoch}"] = y_test_pred.cpu().squeeze(2).squeeze(1).detach().numpy()
 
@@ -94,13 +115,15 @@ def train(
         # Append train and test loss
         train_loss_list.append(train_loss)
         test_loss_list.append(test_loss)
-        print(f"Epoch {epoch} | train loss {train_loss} | test_loss {test_loss}")
+        print(f"Epoch {epoch} | train loss {train_loss} | test_loss {test_loss} | wall_time {wall_time} | process_time {proc_time}")
 
-    print(type(train_loss_list[1]), type(test_loss_list[1]))
+    # print(type(train_loss_list[1]), type(test_loss_list[1]))
     loss_df = pd.DataFrame(
         {
             "train_loss": train_loss_list,
-            "test_loss": test_loss_list    
+            "test_loss": test_loss_list,
+            "proc_time": proc_time_list,
+            "wall_time": wall_time_list  
         }
     )
 

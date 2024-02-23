@@ -27,6 +27,7 @@ def log_returns(
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
 
+    df["Timestamp"] = int(df.index.astype(int)/86400)
     df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
 
     returns = pd.DataFrame(df["Log Returns"]) 
@@ -42,13 +43,24 @@ def log_returns(
         ], 
         axis=1)
 
-    dataset_df = dataset_df.reindex(final_idx).dropna()
+    time_dataset_df = pd.concat(
+        [
+            pd.DataFrame(returns["Timestamp"]).rename(columns={"Timestamp": f"{i}"}).shift(i)
+            for i in range(-horizon, seq_len)
+        ], 
+        axis=1)
+
+    dataset_df, time_dataset_df = dataset_df.reindex(final_idx).dropna(), time_dataset_df.reindex(final_idx).dropna()
 
     X = dataset_df[[f"{i}" for i in range(0,seq_len)]]
+    X_time = time_dataset_df[[f"{i}" for i in range(0,seq_len)]]
     y = dataset_df[[f"{i}" for i in range(-horizon,0)]]
+    y_time = time_dataset_df[[f"{i}" for i in range(-horizon,0)]]
     
-    return (torch.Tensor(X.to_numpy()).unsqueeze(2), 
-        torch.Tensor(y.to_numpy()).unsqueeze(2), 
+    return (torch.Tensor(X.to_numpy()).unsqueeze(2),
+        torch.Tensor(X_time.to_numpy()).unsqueeze(2), 
+        torch.Tensor(y.to_numpy()).unsqueeze(2),
+        torch.Tensor(y_time.to_numpy()).unsqueeze(2), 
         scaler)  # Tensors not yet scaled
 
 

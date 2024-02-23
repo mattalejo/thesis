@@ -49,8 +49,8 @@ class Transformer(nn.Module):
         # output = self.decoder(output)
         # print(f"output shape: {output.shape}")
 
-        src = src + self.pos_encoder(src_time)
-        tgt = tgt + self.pos_encoder(tgt)
+        src = self.pos_encoder(src, src_time)
+        tgt = self.pos_encoder(src, tgt_time)
         output = self.transformer(src, tgt)
         output = self.decoder(output)
 
