@@ -84,10 +84,10 @@ def train(
     backprop = optimizer(model.parameters(), lr=lr)
 
     X_test = train_test["X"]["Log Returns"]["test"].to(device)
-    y_test = train_test["y"]["Log Returns"]["train"].to(device)
+    y_test = train_test["y"]["Log Returns"]["test"].to(device)
 
     X_test_time = train_test["X"]["Timestamp"]["test"].to(device)
-    y_test_time = train_test["y"]["Timestamp"]["train"].to(device)
+    y_test_time = train_test["y"]["Timestamp"]["test"].to(device)
 
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
