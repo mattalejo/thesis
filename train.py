@@ -33,7 +33,7 @@ def train(
     )
 
     train_test = dict()
-    for X_key, y_key in zip(X.keys, y.keys):
+    for X_key, y_key in zip(X, y):
         X[X_key] = prep_data.to_tensor(X[X_key])
         y[y_key] = prep_data.to_tensor(y[y_key])
         train_test["X"][X_key]["train"], train_test["X"][X_key]["test"] = prep_data.train_test_split(X[X_key])
