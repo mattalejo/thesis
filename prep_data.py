@@ -6,8 +6,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 
-from scaler import Standard, MinMax, DoubleMinMax, No
-
+import scaler
 
 def log_returns(
     seq_len: int,
@@ -35,11 +34,11 @@ def log_returns(
 
     df_columns = ["Timestamp", "Log Returns", "Cumulative"]
 
-    scaler = {
-        "std": Standard(df),
-        "minmax": MinMax(df),
-        "minmax2": DoubleMinMax(df),
-        "none": No(df)
+    scale = {
+        "std": scaler.Standard(df),
+        "minmax": scaler.MinMax(df),
+        "minmax2": scaler.DoubleMinMax(df),
+        "none": scaler.No(df)
     }
 
     # Datasets: DataFrames,
