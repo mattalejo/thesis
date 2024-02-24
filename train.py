@@ -93,6 +93,7 @@ def train(
         y_train_pred = torch.Tensor()  # Whole sequence of train dataset prediction
         
         for X_batch, X_batch_time, y_batch, y_batch_time in loader:
+            print(X_batch.shape, X_batch_time.shape, y_batch.shape)
             start_time = time.time()
             # Forward pass and backpropagation
             y_pred = model(
@@ -114,6 +115,7 @@ def train(
                 ), 
                 0
             )
+            print(y_train_pred.shape)
             torch.cuda.empty_cache() 
         
         end_time_wall, end_time_proc = time.time(), time.process_time()
