@@ -31,7 +31,6 @@ def log_returns(
     df["Timestamp"] = df["Timestamp"].apply(lambda x: float(x))/(86400*1_000_000_000)
 
     df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
-
     df["Cumulative"] = np.exp(df["Log Returns"].cumsum())
 
     df_columns = ["Timestamp", "Log Returns", "Cumulative"]
@@ -42,6 +41,7 @@ def log_returns(
     datasets = dict()
     X = dict()
     y = dict()
+    
 
     for column in df_columns:
         datasets[column] =  pd.concat(

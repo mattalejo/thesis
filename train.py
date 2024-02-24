@@ -83,8 +83,8 @@ def train(
     
     backprop = optimizer(model.parameters(), lr=lr)
 
-    X_test = train_test["X"]["Log Returns"]["test"].to(device)
-    y_test = train_test["y"]["Log Returns"]["test"].to(device)
+    X_test = scaler.fit(train_test["X"]["Log Returns"]["test"]).to(device)
+    y_test = scaler.fit(train_test["y"]["Log Returns"]["test"]).to(device)
 
     X_test_time = train_test["X"]["Timestamp"]["test"].to(device)
     y_test_time = train_test["y"]["Timestamp"]["test"].to(device)
@@ -99,8 +99,8 @@ def train(
             start_time = time.time()
             # Forward pass and backpropagation
             y_pred = model(
-                src=X_batch.to(device), 
-                tgt=y_batch.to(device), 
+                src=scaler.fit(X_batch).to(device), 
+                tgt=scaler.fit(y_batch).to(device), 
                 src_time=X_batch_time.to(device), 
                 tgt_time=y_batch_time.to(device)
             )  # y_pred: (batch_size, horizon, 1)
@@ -134,7 +134,6 @@ def train(
         with torch.no_grad():
             model.eval()
             
-            print(f"X_test {X_test.shape} | y_test {y_test.shape} | X_test_time {X_test_time.shape} | y_test_time {y_test_time.shape}")
             y_test_pred = model(
                 src=X_test, 
                 tgt=y_test, 
