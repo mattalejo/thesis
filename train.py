@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 
+import scaler
 
 def close_price(returns):
     return np.exp(np.cumsum(returns, axis=1))
@@ -33,7 +34,7 @@ def train(
         horizon=horizon
     )
 
-    scaler = scale[scale_method]
+    scaling = scale[scale_method]
 
     train_test = {
         "X": {},
@@ -54,7 +55,7 @@ def train(
     proc_time_list = []
     
     df_train = pd.DataFrame(
-        {"y": scaler.inverse_fit(
+        {"y": scaling.inverse_fit(
             train_test["y"]["Log Returns"]["train"]  # unnormed; needs to be unnormed; no scale
             .squeeze(2)
             .squeeze(1)
@@ -63,7 +64,7 @@ def train(
         }
     )
     df_test = pd.DataFrame(
-        {"y": scaler.inverse_fit(
+        {"y": scaling.inverse_fit(
             train_test["y"]["Log Returns"]["test"]  # unnormed; needs to be unnormed; no scale
             .squeeze(2)
             .squeeze(1)
@@ -86,8 +87,8 @@ def train(
     
     backprop = optimizer(model.parameters(), lr=lr)
 
-    X_test = scaler.fit(train_test["X"]["Log Returns"]["test"]).to(device) # unnormed; needs to be normed; scale fit
-    y_test = scaler.fit(train_test["y"]["Log Returns"]["test"]).to(device) # unnormed; needs to be normed; scale fit
+    X_test = scaling.fit(train_test["X"]["Log Returns"]["test"]).to(device) # unnormed; needs to be normed; scale fit
+    y_test = scaling.fit(train_test["y"]["Log Returns"]["test"]).to(device) # unnormed; needs to be normed; scale fit
 
     X_test_time = train_test["X"]["Timestamp"]["test"].to(device)
     y_test_time = train_test["y"]["Timestamp"]["test"].to(device)
@@ -102,12 +103,12 @@ def train(
             start_time = time.time()
             # Forward pass and backpropagation
             y_pred = model(  # normed result
-                src=scaler.fit(X_batch).to(device),  # unnormed; needs to be normed; scale fit
-                tgt=scaler.fit(y_batch).to(device),  # unnormed; needs to be normed; scale fit
+                src=scaling.fit(X_batch).to(device),  # unnormed; needs to be normed; scale fit
+                tgt=scaling.fit(y_batch).to(device),  # unnormed; needs to be normed; scale fit
                 src_time=X_batch_time.to(device), 
                 tgt_time=y_batch_time.to(device)
             )  # y_pred: (batch_size, horizon, 1)
-            batch_loss = loss(y_pred, scaler.fit(y_batch).to(device))  # normed + unnormed, scale fit the unnormed
+            batch_loss = loss(y_pred, scaling.fit(y_batch).to(device))  # normed + unnormed, scale fit the unnormed
             total_loss += batch_loss
             backprop.zero_grad()
             batch_loss.backward()
@@ -116,7 +117,7 @@ def train(
             y_train_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
                 (
                     y_train_pred.cpu(), # unnormed
-                    scaler.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu() # normed, needs scaler inverse fit
+                    scaling.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu() # normed, needs scaler inverse fit
                 ), 
                 0
             )
@@ -144,7 +145,7 @@ def train(
                 tgt_time=y_test_time
             )
             
-            df_test[f"epoch_{epoch}"] = scaler.inverse_fit(y_test_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
+            df_test[f"epoch_{epoch}"] = scaling.inverse_fit(y_test_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
 
             test_loss = loss(y_test_pred, y_test)
             torch.cuda.empty_cache() 
@@ -165,7 +166,7 @@ def train(
         }
     )
 
-    return model, loss_df, df_train, df_test, scaler
+    return model, loss_df, df_train, df_test, scaling
 
 
 def train_cumsum(
