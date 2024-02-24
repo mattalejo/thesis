@@ -46,7 +46,7 @@ def log_returns(
     for column in df_columns:
         datasets[column] =  pd.concat(
         [
-            pd.DataFrame(returns[column]).rename(columns={column: f"{i}"}).shift(i)
+            pd.DataFrame(df[column]).rename(columns={column: f"{i}"}).shift(i)
             for i in range(-horizon, seq_len)
         ], 
         axis=1)
