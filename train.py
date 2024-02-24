@@ -71,16 +71,17 @@ def train(
         }
     )
     
-    loader = DataLoader(
-        list(zip(
-            train_test["X"]["Log Returns"]["train"], 
-            train_test["X"]["Timestamp"]["train"], 
-            train_test["y"]["Log Returns"]["train"], 
-            train_test["y"]["Timestamp"]["train"],
-            )
-        ), 
-        batch_size=batch_size
-    )
+    if batch_size != 0:
+        loader = DataLoader(
+            list(zip(
+                train_test["X"]["Log Returns"]["train"], 
+                train_test["X"]["Timestamp"]["train"], 
+                train_test["y"]["Log Returns"]["train"], 
+                train_test["y"]["Timestamp"]["train"],
+                )
+            ), 
+            batch_size=batch_size
+        )
     model = model.to(device)
     
     backprop = optimizer(model.parameters(), lr=lr)
@@ -94,32 +95,48 @@ def train(
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
         model.train()
-        total_loss = 0.
         y_train_pred = torch.Tensor()  # Whole sequence of train dataset prediction
         
-        for X_batch, X_batch_time, y_batch, y_batch_time in loader:
-            start_time = time.time()
-            # Forward pass and backpropagation
-            y_pred = model(  # normed result
-                src=scaling.fit(X_batch).to(device),  # unnormed; needs to be normed; scale fit
-                tgt=scaling.fit(y_batch).to(device),  # unnormed; needs to be normed; scale fit
-                src_time=X_batch_time.to(device), 
-                tgt_time=y_batch_time.to(device)
-            )  # y_pred: (batch_size, horizon, 1)
-            batch_loss = loss(y_pred, scaling.fit(y_batch).to(device))  # normed + unnormed, scale fit the unnormed
-            total_loss += batch_loss
-            backprop.zero_grad()
-            batch_loss.backward()
-            backprop.step()
-            # Recording predictions
-            y_train_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
-                (
-                    y_train_pred.cpu(), # unnormed
-                    scaling.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu() # normed, needs scaler inverse fit
-                ), 
-                0
+        if batch_size != 0:
+            total_loss = 0.
+            for X_batch, X_batch_time, y_batch, y_batch_time in loader:
+                # Forward pass and backpropagation
+                y_pred = model(  # normed result
+                    src=scaling.fit(X_batch).to(device),  # unnormed; needs to be normed; scale fit
+                    tgt=scaling.fit(y_batch).to(device),  # unnormed; needs to be normed; scale fit
+                    src_time=X_batch_time.to(device), 
+                    tgt_time=y_batch_time.to(device)
+                )  # y_pred: (batch_size, horizon, 1)
+                batch_loss = loss(y_pred, scaling.fit(y_batch).to(device))  # normed + unnormed, scale fit the unnormed
+                total_loss += batch_loss
+                backprop.zero_grad()
+                batch_loss.backward()
+                backprop.step()
+                # Recording predictions
+                y_train_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
+                    (
+                        y_train_pred.cpu(), # unnormed
+                        scaling.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu() # normed, needs scaler inverse fit
+                    ), 
+                    0
+                )
+                torch.cuda.empty_cache() 
+        
+        else:
+            y_pred = model(
+                src=scaling.fit(train_test["X"]["Log Returns"]["train"]).to(device), 
+                tgt=scaling.fit(train_test["y"]["Log Returns"]["train"]).to(device), 
+                src_time=scaling.fit(train_test["X"]["Timestamp"]["train"]).to(device), 
+                tgt_time=scaling.fit(train_test["y"]["Timestamp"]["train"]).to(device),
             )
-            torch.cuda.empty_cache() 
+            total_loss = loss(
+                y_pred, 
+                scaling.fit(train_test["y"]["Log Returns"]["train"]).to(device)
+            )
+            backprop.zero_grad()
+            total_loss.backward()
+            backprop.step()
+            y_train_pred = y_pred
         
         end_time_wall, end_time_proc = time.time(), time.process_time()
         
