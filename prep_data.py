@@ -19,50 +19,45 @@ def log_returns(
     """
     Load the Log Returns dataset to a pd.DataFrame object
     """
+
     idx = pd.date_range("1990-01-01", "2022-12-31")
     final_idx = pd.date_range(start_date, end_date)
 
     df = yf.download([ticker], "1990-01-01", "2022-12-31")
-    print(df.head())
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
 
     df["Timestamp"] = df.index.astype(int)
     df["Timestamp"] = df["Timestamp"].apply(lambda x: float(x))/(86400*1_000_000_000)
+
     df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
 
-    returns = pd.DataFrame(df[["Log Returns", "Timestamp"]]) 
-    # print(returns.tail())
-    # print(returns.shift(1).tail())
+    df["Cumulative"] = np.exp(df["Log Returns"].cumsum())
+
+    df_columns = ["Timestamp", "Log Returns", "Cumulative"]
 
     scaler = Scaler(df)
 
-    dataset_df = pd.concat(
+    # Datasets: DataFrames,
+    datasets = dict()
+    X = dict()
+    y = dict()
+
+    for column in df_columns:
+        datasets[column] =  pd.concat(
         [
-            pd.DataFrame(returns["Log Returns"]).rename(columns={"Log Returns": f"{i}"}).shift(i)
+            pd.DataFrame(returns[column]).rename(columns={column: f"{i}"}).shift(i)
             for i in range(-horizon, seq_len)
         ], 
         axis=1)
+        datasets[column] = datasets[column].redindex(final_idx).dropna()
+        X[column] = datasets[column][[f"{i}" for i in range(0,seq_len)]]
+        y[column] = datasets[column][[f"{i}" for i in range(-horizon,0)]]
 
-    time_dataset_df = pd.concat(
-        [
-            pd.DataFrame(returns["Timestamp"]).rename(columns={"Timestamp": f"{i}"}).shift(i)
-            for i in range(-horizon, seq_len)
-        ], 
-        axis=1)
+    return datasets, X, y, scaler  # Tensors not yet scaled
 
-    dataset_df, time_dataset_df = dataset_df.reindex(final_idx).dropna(), time_dataset_df.reindex(final_idx).dropna()
-
-    X = dataset_df[[f"{i}" for i in range(0,seq_len)]]
-    X_time = time_dataset_df[[f"{i}" for i in range(0,seq_len)]]
-    y = dataset_df[[f"{i}" for i in range(-horizon,0)]]
-    y_time = time_dataset_df[[f"{i}" for i in range(-horizon,0)]]
-    
-    return (torch.Tensor(X.to_numpy()).unsqueeze(2),
-        torch.Tensor(X_time.to_numpy()).unsqueeze(2), 
-        torch.Tensor(y.to_numpy()).unsqueeze(2),
-        torch.Tensor(y_time.to_numpy()).unsqueeze(2), 
-        scaler)  # Tensors not yet scaled
+def to_tensor(df):
+    return torch.Tensor(df.to_numpy()).unsqueeze(2)
 
 
 def log_returns_w_close(

@@ -27,14 +27,17 @@ def train(
     lr=1e-4,
     device="cpu"
 ):
-    X,  X_time, y, y_time, scaler = prep_data.log_returns(seq_len=seq_len, horizon=horizon)
+    _, X, y, scaler = prep_data.log_returns(
+        seq_len=seq_len, 
+        horizon=horizon
+    )
 
-    X, y = scaler.fit(X), scaler.fit(y)
-
-    X_train, X_test = prep_data.train_test_split(X)
-    X_train_time, X_test_time = prep_data.train_test_split(X_time)
-    y_train, y_test = prep_data.train_test_split(y)
-    y_train_time, y_test_time = prep_data.train_test_split(y_time)
+    train_test = dict()
+    for X_key, y_key in zip(X.keys, y.keys):
+        X[X_key] = prep_data.to_tensor(X[X_key])
+        y[y_key] = prep_data.to_tensor(y[y_key])
+        train_test["X"][X_key]["train"], train_test["X"][X_key]["test"] = prep_data.train_test_split(X[X_key])
+        train_test["y"][y_key]["train"], train_test["y"][y_key]["test"] = prep_data.train_test_split(y[y_key])
     
     # Initialize some DataFrames for recording stuff
     train_loss_list = []
@@ -43,21 +46,40 @@ def train(
     proc_time_list = []
     
     df_train = pd.DataFrame(
-        {"y": scaler.inverse_fit(y_train.squeeze(2).squeeze(1).numpy())}
+        {"y": scaler.inverse_fit(
+            train_test["y"]["Log Returns"]["train"]
+            .squeeze(2)
+            .squeeze(1)
+            .numpy()
+            )
+        }
     )
     df_test = pd.DataFrame(
-        {"y": scaler.inverse_fit(y_test.squeeze(2).squeeze(1).numpy())}
+        {"y": scaler.inverse_fit(
+            train_test["y"]["Log Returns"]["test"]
+            .squeeze(2)
+            .squeeze(1)
+            .numpy()
+            )
+        }
     )
     
     loader = DataLoader(
-        list(zip(X_train, X_train_time, y_train, y_train_time)), 
+        list(zip(
+            train_test["X"]["Log Returns"]["train"], 
+            train_test["X"]["Timestamp"]["train"], 
+            train_test["y"]["Log Returns"]["train"], 
+            train_test["y"]["Timestamp"]["train"],
+            )
+        ), 
         batch_size=batch_size
     )
     model = model.to(device)
     
     backprop = optimizer(model.parameters(), lr=lr)
 
-    X_test, y_test = X_test.to(device), y_test.to(device)
+    X_test = train_test["X"]["Log Returns"]["test"].to(device)
+    y_test = train_test["y"]["Log Returns"]["train"].to(device)
 
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
@@ -88,9 +110,12 @@ def train(
                 0
             )
             torch.cuda.empty_cache() 
+        
         end_time_wall, end_time_proc = time.time(), time.process_time()
+        
         wall_time = end_time_wall - start_time_wall
         proc_time = end_time_proc - start_time_proc
+        
         wall_time_list.append(wall_time)
         proc_time_list.append(proc_time)
 
@@ -125,7 +150,7 @@ def train(
             "train_loss": train_loss_list,
             "test_loss": test_loss_list,
             "proc_time": proc_time_list,
-            "wall_time": wall_time_list  
+            "wall_time": wall_time_list,  
         }
     )
 
