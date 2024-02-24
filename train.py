@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 
-import scaler
+from scaler import Scaler
 
 def close_price(returns):
     return np.exp(np.cumsum(returns, axis=1))
@@ -29,12 +29,10 @@ def train(
     scale_method="std",
     device="cpu"
 ):
-    _, X, y, scale = prep_data.log_returns(
+    _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
         horizon=horizon
     )
-
-    scaling = scale[scale_method]
 
     train_test = {
         "X": {},
