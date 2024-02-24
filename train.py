@@ -104,13 +104,13 @@ def train(
                 src_time=X_batch_time.to(device), 
                 tgt_time=y_batch_time.to(device)
             )  # y_pred: (batch_size, horizon, 1)
-            batch_loss = loss(y_pred, y_batch.to(device))
+            batch_loss = loss(y_pred, scaler.fit(y_batch).to(device))
             total_loss += batch_loss
             backprop.zero_grad()
             batch_loss.backward()
             backprop.step()
             # Recording predictions
-            y_train_pred = torch.cat(
+            y_train_pred = torch.cat(  # y_train pred is unnormed, y_pred is still normed
                 (
                     y_train_pred.cpu(), 
                     scaler.inverse_fit(y_pred).squeeze(2).squeeze(1).cpu()
