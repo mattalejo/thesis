@@ -42,7 +42,9 @@ class Transformer(nn.Module):
         print(f"src pre embed {src.shape}")
         src = self.pos_encoder(src, src_time)
         print(f"src post embed {src.shape}")
+        print(f"tgt pre embed {tgt.shape}")
         tgt = self.pos_encoder(src, tgt_time)
+        print(f"tgt post embed {tgt.shape}")
         
         output = self.transformer(src, tgt)
         print(f"output shape {output.shape}")
