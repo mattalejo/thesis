@@ -53,22 +53,10 @@ def train(
     proc_time_list = []
     
     df_train = pd.DataFrame(
-        {"y": scaling.inverse_fit(
-            train_test["y"]["Log Returns"]["train"]  # unnormed; needs to be unnormed; no scale
-            .squeeze(2)
-            .squeeze(1)
-            .numpy()
-            )
-        }
+        {"y": train_test["y"]["Log Returns"]["train"].squeeze(2).squeeze(1).numpy()}
     )
     df_test = pd.DataFrame(
-        {"y": scaling.inverse_fit(
-            train_test["y"]["Log Returns"]["test"]  # unnormed; needs to be unnormed; no scale
-            .squeeze(2)
-            .squeeze(1)
-            .numpy()
-            )
-        }
+        {"y": train_test["y"]["Log Returns"]["test"].squeeze(2).squeeze(1).numpy()}
     )
     
     if batch_size != 0:
