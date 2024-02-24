@@ -86,6 +86,9 @@ def train(
     X_test = train_test["X"]["Log Returns"]["test"].to(device)
     y_test = train_test["y"]["Log Returns"]["train"].to(device)
 
+    X_test_time = train_test["X"]["Timestamp"]["test"].to(device)
+    y_test_time = train_test["y"]["TImestamp"]["train"].to(device)
+
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
         model.train()
@@ -93,7 +96,6 @@ def train(
         y_train_pred = torch.Tensor()  # Whole sequence of train dataset prediction
         
         for X_batch, X_batch_time, y_batch, y_batch_time in loader:
-            print(X_batch.shape, X_batch_time.shape, y_batch.shape)
             start_time = time.time()
             # Forward pass and backpropagation
             y_pred = model(
@@ -102,7 +104,6 @@ def train(
                 src_time=X_batch_time.to(device), 
                 tgt_time=y_batch_time.to(device)
             )  # y_pred: (batch_size, horizon, 1)
-            print(f"y_pred {y_pred.shape}")
             batch_loss = loss(y_pred, y_batch.to(device))
             total_loss += batch_loss
             backprop.zero_grad()
@@ -116,7 +117,6 @@ def train(
                 ), 
                 0
             )
-            print(y_train_pred.shape)
             torch.cuda.empty_cache() 
         
         end_time_wall, end_time_proc = time.time(), time.process_time()
