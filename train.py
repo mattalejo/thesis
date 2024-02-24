@@ -137,6 +137,7 @@ def train(
             total_loss.backward()
             backprop.step()
             y_train_pred = y_pred
+            torch.cuda.empty_cache()
         
         end_time_wall, end_time_proc = time.time(), time.process_time()
         
