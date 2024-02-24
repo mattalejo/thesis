@@ -154,7 +154,7 @@ def train(
         # Append train and test loss
         train_loss_list.append(train_loss)
         test_loss_list.append(test_loss)
-        print(f"Epoch {epoch} | train loss {train_loss} | test_loss {test_loss} | wall_time {wall_time} | process_time {proc_time}")
+        print(f"Epoch {epoch:.4f} | train loss {train_loss:.4f} | test_loss {test_loss:.4f} | wall_time {wall_time:.4f} | process_time {proc_time:.4f}")
 
     # print(type(train_loss_list[1]), type(test_loss_list[1]))
     df_train = pd.DataFrame(df_train)
