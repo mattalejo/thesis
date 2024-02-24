@@ -52,12 +52,8 @@ def train(
     wall_time_list = []
     proc_time_list = []
     
-    df_train = pd.DataFrame(
-        {"y": train_test["y"]["Log Returns"]["train"].squeeze(2).squeeze(1).numpy()}
-    )
-    df_test = pd.DataFrame(
-        {"y": train_test["y"]["Log Returns"]["test"].squeeze(2).squeeze(1).numpy()}
-    )
+    df_train = {"y": train_test["y"]["Log Returns"]["train"].squeeze(2).squeeze(1).numpy()}
+    df_test = {"y": train_test["y"]["Log Returns"]["test"].squeeze(2).squeeze(1).numpy()}
     
     if batch_size != 0:
         loader = DataLoader(
@@ -161,6 +157,8 @@ def train(
         print(f"Epoch {epoch} | train loss {train_loss} | test_loss {test_loss} | wall_time {wall_time} | process_time {proc_time}")
 
     # print(type(train_loss_list[1]), type(test_loss_list[1]))
+    df_train = pd.DataFrame(df_train)
+    df_test = pd.DataFrame(df_test)
     loss_df = pd.DataFrame(
         {
             "train_loss": train_loss_list,
