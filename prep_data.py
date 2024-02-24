@@ -50,7 +50,7 @@ def log_returns(
             for i in range(-horizon, seq_len)
         ], 
         axis=1)
-        datasets[column] = datasets[column].redindex(final_idx).dropna()
+        datasets[column] = datasets[column].reindex(final_idx).dropna()
         X[column] = datasets[column][[f"{i}" for i in range(0,seq_len)]]
         y[column] = datasets[column][[f"{i}" for i in range(-horizon,0)]]
 
