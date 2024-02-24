@@ -134,6 +134,7 @@ def train(
         with torch.no_grad():
             model.eval()
             
+            print(f"X_test {X_test.shape} | y_test {y_test.shape} | X_test_time {X_test_time.shape} | y_test_time {y_test_time.shape}")
             y_test_pred = model(
                 src=X_test, 
                 tgt=y_test, 
