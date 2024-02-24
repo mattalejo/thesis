@@ -39,7 +39,9 @@ class Transformer(nn.Module):
         self.decoder = nn.Linear(d_model, 1)
 
     def forward(self, src, tgt, src_time, tgt_time):
+        print(f"src pre embed {src.shape}")
         src = self.pos_encoder(src, src_time)
+        print(f"src post embed {src.shape}")
         tgt = self.pos_encoder(src, tgt_time)
         
         output = self.transformer(src, tgt)
