@@ -102,6 +102,7 @@ def train(
                 src_time=X_batch_time.to(device), 
                 tgt_time=y_batch_time.to(device)
             )  # y_pred: (batch_size, horizon, 1)
+            print(f"y_pred {y_pred.shape}")
             batch_loss = loss(y_pred, y_batch.to(device))
             total_loss += batch_loss
             backprop.zero_grad()
