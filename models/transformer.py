@@ -35,23 +35,15 @@ class Transformer(nn.Module):
         #     d_model=d_model, nhead=decoder_head, dropout=dropout, activation=activation
         # )
         # self.decoder = 
-        self.decoder = nn.Linear(d_model, 1)
         self.transformer = nn.Transformer(d_model=d_model, nhead=nhead, num_encoder_layers=num_layers, num_decoder_layers=num_layers, dropout=dropout, activation=activation, batch_first=batch_first)
+        self.decoder = nn.Linear(d_model, 1)
 
     def forward(self, src, tgt, src_time, tgt_time):
-        # if self.src_mask is None or self.src_mask.size(0) != len(src):
-        #     mask = self._generate_square_subsequent_mask(len(src))
-        #     self.src_mask = mask
-        # print(f"src shape before PE: {src.shape}")
-        # src = self.pos_encoder(src)
-        # print(f"src shape: {src.shape}")
-        # output = self.transformer_encoder(src, self.src_mask)
-        # output = self.decoder(output)
-        # print(f"output shape: {output.shape}")
-
         src = self.pos_encoder(src, src_time)
         tgt = self.pos_encoder(src, tgt_time)
+        
         output = self.transformer(src, tgt)
+        print(f"output shape {output.shape}")
         output = self.decoder(output)
 
         return output
