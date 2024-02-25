@@ -10,11 +10,27 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x, x_time):
         device = x_time.device
+        seq_len = x_time.size(1)
+        pos = torch.arange(seq_len, dtype=torch.float).unsqueeze(1).to(device)
         div_term = torch.exp(torch.arange(0, self.d_model, 2, dtype=torch.float) * -(math.log(10000.0) / self.d_model)).to(device)
-        pos_enc = torch.zeros_like(x_time).expand(-1, -1, self.d_model)
-        pos_enc[:, :, 0::2] = torch.sin(x_time * div_term)
-        pos_enc[:, :, 1::2] = torch.cos(x_time * div_term)
-        return x + pos_enc
+        pos_enc_sin = torch.sin(x_time * div_term)
+        pos_enc_cos = torch.cos(x_time * div_term)
+        pos_enc = torch.cat((pos_enc_sin, pos_enc_cos), dim=-1)
+        return x+ pos_enc
+
+
+# class PositionalEncoding(nn.Module):
+#     def __init__(self, d_model):
+#         super(PositionalEncoding, self).__init__()
+#         self.d_model = d_model
+
+#     def forward(self, x, x_time):
+#         device = x_time.device
+#         div_term = torch.exp(torch.arange(0, self.d_model, 2, dtype=torch.float) * -(math.log(10000.0) / self.d_model)).to(device)
+#         pos_enc = torch.zeros_like(x_time).expand(-1, -1, self.d_model)
+#         pos_enc[:, :, 0::2] = torch.sin(x_time * div_term)
+#         pos_enc[:, :, 1::2] = torch.cos(x_time * div_term)
+#         return x + pos_enc
 
 # class PositionalEncoding(nn.Module):
 #     def __init__(self, d_model):
