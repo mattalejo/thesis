@@ -219,7 +219,6 @@ def test(
         )
 
     with torch.no_grad():
-        model.eval()
         if batch_size == 0:
             y_pred = model(
                 src=scaling.fit(X["Log Returns"]).to(device),
