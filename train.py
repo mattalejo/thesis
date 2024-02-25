@@ -244,7 +244,7 @@ def test(
                 y_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
                     (
                         y_pred.cpu(), # unnormed
-                        scaling.inverse_fit(y_batch_pred).cpu() # normed, needs scaler inverse fit
+                        y_batch_pred.cpu() # normed, needs scaler inverse fit
                     ), 
                     0
                 )
