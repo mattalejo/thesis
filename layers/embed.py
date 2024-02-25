@@ -22,13 +22,13 @@ class PositionalEncoding(nn.Module):
 
 
 class Time2Vec(nn.Module):
-    def __init__(self, d_model, seq_len=64):
+    def __init__(self, d_model, seq_len=128):
         super(Time2Vec, self).__init__()
         self.d_model = d_model
         self.seq_len = seq_len
-        self.w0 = nn.Parameter(torch.randn(1, 2)) 
+        self.w0 = nn.Parameter(torch.randn(1)) 
         self.b0 = nn.Parameter(torch.randn(1))
-        self.w = nn.Parameter(torch.Tensor(self.d_model-1, 2))
+        self.w = nn.Parameter(torch.Tensor(self.d_model-1))
         self.b = nn.Parameter(torch.Tensor(self.d_model-1))
         self.reset_parameters()
 
@@ -38,7 +38,7 @@ class Time2Vec(nn.Module):
 
     def forward(self, x, x_time):
         t2v = torch.zeros(self.seq_len, self.d_model)
-        t2v[:, 0] = x_time.unsqueeze(1) * self.w0 + self.b0
-        t2v[:, 1::] = torch.sin(x_time.unsqueeze(1) * self.w + self.b0)
+        t2v[:, 0] = x_time * self.w0 + self.b0
+        t2v[:, 1::] = torch.sin(x_time * self.w + self.b0)
         t2v = t2v.unsqueeze(0).transpose(0, 1)
         return x + t2v
