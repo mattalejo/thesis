@@ -248,6 +248,7 @@ def test(
                     ), 
                     0
                 )
+            print(y_pred.shape)
 
         test_loss = loss(y_pred.to(device), y["Log Returns"].to(device))
     df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
