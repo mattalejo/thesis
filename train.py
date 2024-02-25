@@ -22,7 +22,9 @@ def train(
     seq_len,
     horizon,
     max_epoch, 
-    batch_size, 
+    batch_size,
+    start_date="2010-01-01",
+    end_date="2019-12-31",
     loss=nn.MSELoss(),
     optimizer=optim.Adam, 
     lr=1e-4,
@@ -31,7 +33,9 @@ def train(
 ):
     _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
-        horizon=horizon
+        horizon=horizon,
+        start_date=start_date,
+        end_date=end_date
     )
 
     train_test = {
@@ -75,6 +79,9 @@ def train(
 
     X_test_time = train_test["X"]["Timestamp"]["test"].to(device)
     y_test_time = train_test["y"]["Timestamp"]["test"].to(device)
+
+    best_loss = float('inf')
+    best_model = None
 
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
@@ -148,6 +155,11 @@ def train(
             df_test[f"epoch_{epoch}"] = scaling.inverse_fit(y_test_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
 
             test_loss = loss(y_test_pred, y_test)
+            
+            if best_loss < test_loss:
+                best_loss = test_loss
+                best_model = model
+
             torch.cuda.empty_cache() 
 
         train_loss, test_loss = total_loss.cpu().detach().numpy()/len(loader),  test_loss.cpu().detach().numpy()
@@ -168,8 +180,49 @@ def train(
         }
     )
 
-    return model, loss_df, df_train, df_test, scaling
+    return model, best_model, loss_df, df_train, df_test, scaling
 
+def test(
+    model, 
+    seq_len,
+    horizon, 
+    batch_size,
+    start_date="2000-01-01",
+    end_date="2022-12-31",
+    loss=nn.MSELoss(),
+    lr=1e-4,
+    scale_method="std",
+    device="cpu"
+):
+    _, X, y, scaling = prep_data.log_returns(
+        seq_len=seq_len, 
+        horizon=horizon,
+        start_date=start_date,
+        end_date=end_date
+    )    
+    for X_key, y_key in zip(X, y):
+        X[X_key] = prep_data.to_tensor(X[X_key])
+        y[y_key] = prep_data.to_tensor(y[y_key])
+    
+    df_test = {"y": y["Log Returns"]}
+
+    model.to(device)
+
+    with torch.no_grad():
+        model.eval()
+        y_pred = model(
+            src=scaling.fit(X["Log Returns"]).to(device),
+            src_time=scaling.fit(X["Timestamp"]).to(device),
+            tgt=scaling.fit(y["Log Returns"]).to(device),
+            tgt_time=scaling.fit(y["Timestamp"]).to(device)
+        )
+        df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
+        torch.cuda.empty_cache()
+
+        test_loss = loss(y_pred, y["Log Returns"].to(device))
+    df_test = pd.DataFrame(df_test)
+
+    return df_test, loss
 
 def train_cumsum(
     model, 

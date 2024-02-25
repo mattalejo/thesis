@@ -19,10 +19,10 @@ def log_returns(
     Load the Log Returns dataset to a pd.DataFrame object
     """
 
-    idx = pd.date_range("1990-01-01", "2022-12-31")
+    idx = pd.date_range("1990-01-01", "2023-12-31")
     final_idx = pd.date_range(start_date, end_date)
 
-    df = yf.download([ticker], "1990-01-01", "2022-12-31")
+    df = yf.download([ticker], "1990-01-01", "2023-12-31")
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
 
