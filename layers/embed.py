@@ -33,7 +33,7 @@ class Time2Vec(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        nn.init.xavier_uniform_(self.w)
+        nn.nn.init.normal_(self.w)
         nn.init.zeros_(self.b)
 
     def forward(self, x, x_time):
