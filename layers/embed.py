@@ -37,7 +37,7 @@ class Time2Vec(nn.Module):
         nn.init.zeros_(self.b)
 
     def forward(self, x, x_time):
-        t2v = torch.zeros(self.seq_len, self.d_model)
+        t2v = torch.zeros(x.size(0) ,self.seq_len, self.d_model)
         t2v[:, : , 0] = x_time * self.w0 + self.b0
         t2v[:, : , 1::] = torch.sin(x_time * self.w + self.b0)
         return x + t2v
