@@ -13,7 +13,7 @@ def log_returns(
     horizon: int,
     ticker: str = "PSEI.PS",
     start_date: str = "2010-01-01",
-    end_date: str = "2020-12-31"
+    end_date: str = "2019-12-31"
 ):
     """
     Load the Log Returns dataset to a pd.DataFrame object

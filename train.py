@@ -166,7 +166,7 @@ def train(
         # Append train and test loss
         train_loss_list.append(train_loss)
         test_loss_list.append(test_loss)
-        print(f"Epoch {epoch:.4f} | train loss {train_loss:.4f} | test_loss {test_loss:.4f} | wall_time {wall_time:.4f} | process_time {proc_time:.4f}")
+        print(f"Epoch {epoch:03d} | train loss {train_loss:.4f} | test_loss {test_loss:.4f} | wall_time {wall_time:.4f} | process_time {proc_time:.4f}")
 
     # print(type(train_loss_list[1]), type(test_loss_list[1]))
     df_train = pd.DataFrame(df_train)
@@ -218,8 +218,6 @@ def test(
             batch_size=batch_size
         )
 
-    model.to(device)
-
     with torch.no_grad():
         model.eval()
         if batch_size == 0:
@@ -254,7 +252,7 @@ def test(
     df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
     df_test = pd.DataFrame(df_test)
 
-    return df_test, loss
+    return df_test, test_loss
 
 def train_cumsum(
     model, 
