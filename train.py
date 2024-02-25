@@ -206,18 +206,49 @@ def test(
     
     df_test = {"y": y["Log Returns"]}
 
+    if batch_size != 0:
+        loader = DataLoader(
+            list(zip(
+                X["Log Returns"], 
+                X["Timestamp"], 
+                y["Log Returns"], 
+                y["Timestamp"]
+                )
+            ), 
+            batch_size=batch_size
+        )
+
     model.to(device)
 
     with torch.no_grad():
         model.eval()
-        y_pred = model(
-            src=scaling.fit(X["Log Returns"]).to(device),
-            src_time=scaling.fit(X["Timestamp"]).to(device),
-            tgt=scaling.fit(y["Log Returns"]).to(device),
-            tgt_time=scaling.fit(y["Timestamp"]).to(device)
-        )
-        df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
-        torch.cuda.empty_cache()
+        if batch_size == 0:
+            y_pred = model(
+                src=scaling.fit(X["Log Returns"]).to(device),
+                src_time=scaling.fit(X["Timestamp"]).to(device),
+                tgt=scaling.fit(y["Log Returns"]).to(device),
+                tgt_time=scaling.fit(y["Timestamp"]).to(device)
+            )
+            df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
+            torch.cuda.empty_cache()
+        else:
+            total_loss = 0.
+            y_pred = torch.Tensor()
+            for X_batch, X_batch_time, y_batch, y_batch_time in loader:
+                # Forward pass and backpropagation
+                y_batch_pred = model(  # normed result
+                    src=scaling.fit(X_batch).to(device),  # unnormed; needs to be normed; scale fit
+                    tgt=scaling.fit(y_batch).to(device),  # unnormed; needs to be normed; scale fit
+                    src_time=X_batch_time.to(device), 
+                    tgt_time=y_batch_time.to(device)
+                )  # y_pred: (batch_size, horizon, 1)
+                y_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
+                    (
+                        y_pred.cpu(), # unnormed
+                        scaling.inverse_fit(y_batch_pred).squeeze(2).squeeze(1).cpu() # normed, needs scaler inverse fit
+                    ), 
+                    0
+                )
 
         test_loss = loss(y_pred, y["Log Returns"].to(device))
     df_test = pd.DataFrame(df_test)
