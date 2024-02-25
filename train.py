@@ -204,7 +204,7 @@ def test(
         X[X_key] = prep_data.to_tensor(X[X_key])
         y[y_key] = prep_data.to_tensor(y[y_key])
     
-    df_test = {"y": y["Log Returns"]}
+    df_test = {"y": y["Log Returns"].cpu().squeeze(2).squeeze(1).detach().numpy()}
 
     if batch_size != 0:
         loader = DataLoader(
