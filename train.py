@@ -217,7 +217,8 @@ def test(
             ), 
             batch_size=batch_size
         )
-
+    device = "cuda:0"
+    model.to(device)
     with torch.no_grad():
         if batch_size == 0:
             y_pred = model(
