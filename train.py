@@ -229,7 +229,6 @@ def test(
                 tgt=scaling.fit(y["Log Returns"]).to(device),
                 tgt_time=scaling.fit(y["Timestamp"]).to(device)
             )
-            df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
             torch.cuda.empty_cache()
         else:
             total_loss = 0.
@@ -250,7 +249,8 @@ def test(
                     0
                 )
 
-        test_loss = loss(y_pred, y["Log Returns"].to(device))
+        test_loss = loss(y_pred.to(device), y["Log Returns"].to(device))
+    df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
     df_test = pd.DataFrame(df_test)
 
     return df_test, loss
