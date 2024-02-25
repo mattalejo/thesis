@@ -26,9 +26,9 @@ class Time2Vec(nn.Module):
         super(Time2Vec, self).__init__()
         self.d_model = d_model
         self.seq_len = seq_len
-        self.w0 = nn.Parameter(torch.randn(1)) 
+        self.w0 = nn.Parameter(torch.randn(1,1)) 
         self.b0 = nn.Parameter(torch.randn(1))
-        self.w = nn.Parameter(torch.Tensor(self.d_model-1))
+        self.w = nn.Parameter(torch.Tensor(1, self.d_model-1))
         self.b = nn.Parameter(torch.Tensor(self.d_model-1))
         self.reset_parameters()
 
