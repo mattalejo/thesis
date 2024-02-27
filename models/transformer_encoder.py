@@ -18,7 +18,7 @@ class TransformerEncoder(nn.Module):
         batch_first: bool = True,
         embed_mode: str = "pe"
     ):
-        super(Transformer, self).__init__()
+        super(TransformerEncoder, self).__init__()
         self.model_type = "Transformer Encoder"
         # self.src_mask = None
         if embed_mode == "pe":
