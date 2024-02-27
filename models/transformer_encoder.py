@@ -3,7 +3,7 @@ import torch.nn as nn
 from layers.embed import PositionalEncoding, Time2Vec
 
 
-class Transformer(nn.Module):
+class TransformerEncoder(nn.Module):
     """
     Transformer model
     """
@@ -16,10 +16,10 @@ class Transformer(nn.Module):
         nhead: int = 4,
         activation: str = "relu",
         batch_first: bool = True,
-        embed_mode: str = "t2v"
+        embed_mode: str = "pe"
     ):
         super(Transformer, self).__init__()
-        self.model_type = "Transformer"
+        self.model_type = "Transformer Encoder"
         # self.src_mask = None
         if embed_mode == "pe":
             self.pos_encoder = PositionalEncoding(d_model)
