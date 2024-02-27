@@ -82,7 +82,10 @@ def train(
 
     best_loss = float('inf')
     best_model = None
+    
+    num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+    print(f"num_params: {num_params}")
     for epoch in range(max_epoch):
         start_time_wall, start_time_proc = time.time(), time.process_time()
         model.train()
