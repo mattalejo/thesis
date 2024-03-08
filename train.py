@@ -220,7 +220,6 @@ def test(
             ), 
             batch_size=batch_size
         )
-    device = "cuda:0"
     model.to(device)
     with torch.no_grad():
         if batch_size == 0:
@@ -232,7 +231,6 @@ def test(
             )
             torch.cuda.empty_cache()
         else:
-            total_loss = 0.
             y_pred = torch.Tensor()
             for X_batch, X_batch_time, y_batch, y_batch_time in loader:
                 # Forward pass and backpropagation
@@ -242,7 +240,7 @@ def test(
                     src_time=X_batch_time.to(device), 
                     tgt_time=y_batch_time.to(device)
                 )  # y_pred: (batch_size, horizon, 1)
-                y_pred = torch.cat(  # y_train pred unnormed, y_pred is still normed
+                y_pred = torch.cat( 
                     (
                         y_pred.cpu(), # unnormed
                         y_batch_pred.cpu() # normed, needs scaler inverse fit
@@ -251,7 +249,7 @@ def test(
                 )
             print(y_pred.shape)
 
-        test_loss = loss(y_pred.to(device), y["Log Returns"].to(device))
+        test_loss = loss(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
     df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
     df_test = pd.DataFrame(df_test)
 
