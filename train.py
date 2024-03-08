@@ -197,6 +197,10 @@ def test(
     scale_method="std",
     device="cpu"
 ):
+
+    mse = nn.MSELoss()
+    mae = nn.L1Loss()
+
     _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
         horizon=horizon,
@@ -249,7 +253,11 @@ def test(
                 )
             print(y_pred.shape)
 
-        test_loss = loss(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
+    test_loss = {
+        "mse": mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))),
+        "mae": mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
+    }
+    # loss(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
     df_test["pred"] = scaling.inverse_fit(y_pred).cpu().squeeze(2).squeeze(1).detach().numpy()
     df_test = pd.DataFrame(df_test)
 
@@ -266,6 +274,7 @@ def train_cumsum(
     lr=1e-4,
     device="cpu"
 ):
+
 
     # Train test split
     X_returns, X_price, y_returns, y_price, scaler = prep_data.log_returns_w_close(seq_len=seq_len, horizon=horizon)
