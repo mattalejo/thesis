@@ -226,9 +226,9 @@ def test(
         if batch_size == 0:
             y_pred = model(
                 src=scaling.fit(X["Log Returns"]).to(device),
-                src_time=scaling.fit(X["Timestamp"]).to(device),
+                src_time=X["Timestamp"].to(device),
                 tgt=scaling.fit(y["Log Returns"]).to(device),
-                tgt_time=scaling.fit(y["Timestamp"]).to(device)
+                tgt_time=y["Timestamp"].to(device)
             )
             torch.cuda.empty_cache()
         else:
