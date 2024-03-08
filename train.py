@@ -270,11 +270,11 @@ def test(
         ).cpu().detach().numpy()),
         "accuracy": {
             "bau": torch.sum(torch.gt(
-                mae(y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))),
+                y_pred.to(device) * scaling.fit(y["Log Returns"].to(device)),
                 0
             ))/torch.count_nonzero(scaling.fit(y["Log Returns"].to(device))),
-            "ffill": torch.sum(torch.gt(
-                mae(y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))),
+            "ffill": torch.sum(torch.ge(
+                y_pred.to(device) * scaling.fit(y["Log Returns"].to(device)),
                 0
             ))/torch.count(scaling.fit(y["Log Returns"].to(device)))
         }
