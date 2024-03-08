@@ -254,8 +254,8 @@ def test(
             print(y_pred.shape)
 
     test_loss = {
-        "mse": mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()[0],
-        "mae": mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()[0],
+        "mse": mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy(),
+        "mae": mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy(),
         "mape": torch.nanmean(
             torch.abs(
                 (
@@ -264,10 +264,10 @@ def test(
                     scaling.fit(y["Log Returns"].to(device))
                 )
                 )
-            ).cpu().detach().numpy()[0],
+            ).cpu().detach().numpy(),
         "rmse": torch.sqrt(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
-        ).cpu().detach().numpy()[0]
+        ).cpu().detach().numpy()
         
     }
     # loss(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
