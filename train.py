@@ -276,7 +276,7 @@ def test(
             "ffill": torch.sum(torch.ge(
                 y_pred.to(device) * scaling.fit(y["Log Returns"].to(device)),
                 0
-            ))/(scaling.fit(y["Log Returns"].to(device))).dim
+            ))/(scaling.fit(y["Log Returns"].to(device))).dim()
         }
         
     }
