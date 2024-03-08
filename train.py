@@ -254,9 +254,9 @@ def test(
             print(y_pred.shape)
 
     test_loss = {
-        "mse": mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy(),
-        "mae": mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy(),
-        "mape": torch.nanmean(
+        "mse": float(mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()),
+        "mae": float(mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()),
+        "mape": float(torch.nanmean(
             torch.abs(
                 (
                     y_pred.to(device)-scaling.fit(y["Log Returns"].to(device))
@@ -264,10 +264,20 @@ def test(
                     scaling.fit(y["Log Returns"].to(device))
                 )
                 )
-            ).cpu().detach().numpy(),
-        "rmse": torch.sqrt(
+            ).cpu().detach().numpy()),
+        "rmse": float(torch.sqrt(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
-        ).cpu().detach().numpy()
+        ).cpu().detach().numpy()),
+        "accuracy": {
+            "bau": torch.sum(torch.gt(
+                mae(y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))),
+                0
+            ))/torch.count_nonzero(scaling.fit(y["Log Returns"].to(device))),
+            "ffill": torch.sum(torch.gt(
+                mae(y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))),
+                0
+            ))/torch.count(scaling.fit(y["Log Returns"].to(device)))
+        }
         
     }
     # loss(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
