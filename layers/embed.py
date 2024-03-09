@@ -4,127 +4,86 @@ import math
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self, d_model):
         super(PositionalEncoding, self).__init__()
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(
-            torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
-        )
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
-        # pe.requires_grad = False
-        self.register_buffer("pe", pe)
+        self.d_model = d_model
 
-    def forward(self, x):
-        return x + self.pe[:x.size(0), :]
+    def forward(self, x, x_time):
+        device = x_time.device
+        seq_len = x_time.size(1)
+        pos = torch.arange(seq_len, dtype=torch.float).unsqueeze(1).to(device)
+        div_term = torch.exp(torch.arange(0, self.d_model, 2, dtype=torch.float) * -(math.log(10000.0) / self.d_model)).to(device)
+        pos_enc_sin = torch.sin(x_time * div_term)
+        pos_enc_cos = torch.cos(x_time * div_term)
+        pos_enc = torch.cat((pos_enc_sin, pos_enc_cos), dim=-1)
+        return x+ pos_enc
 
 
-class qTokenEmbedding(nn.Module):
-    def __init__(self, c_in, d_model):
-        super(TokenEmbedding, self).__init__()
-        padding = 1 if compared_version(torch.__version__, '1.5.0') else 2
-        self.tokenConv = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                                   kernel_size=3, padding=padding, padding_mode='circular', bias=False)
-        for m in self.modules():
-            if isinstance(m, nn.Conv1d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu')
+# class PositionalEncoding(nn.Module):
+#     def __init__(self, d_model):
+#         super(PositionalEncoding, self).__init__()
+#         self.d_model = d_model
 
-    def forward(self, x):
-        x = self.tokenConv(x.permute(0, 2, 1)).transpose(0, 2)
-        return x
+#     def forward(self, x, x_time):
+#         device = x_time.device
+#         div_term = torch.exp(torch.arange(0, self.d_model, 2, dtype=torch.float) * -(math.log(10000.0) / self.d_model)).to(device)
+#         pos_enc = torch.zeros_like(x_time).expand(-1, -1, self.d_model)
+#         pos_enc[:, :, 0::2] = torch.sin(x_time * div_term)
+#         pos_enc[:, :, 1::2] = torch.cos(x_time * div_term)
+#         return x + pos_enc
 
+# class PositionalEncoding(nn.Module):
+#     def __init__(self, d_model):
+#         super(PositionalEncoding, self).__init__()
+#         self.d_model = d_model
 
-class FixedEmbedding(nn.Module):
-    def __init__(self, c_in, d_model):
-        super(FixedEmbedding, self).__init__()
-
-        w = torch.zeros(c_in, d_model).float()
-        w.require_grad = False
-
-        position = torch.arange(0, c_in).float().unsqueeze(1)
-        div_term = (torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)).exp()
-
-        w[:, 0::2] = torch.sin(position * div_term)
-        w[:, 1::2] = torch.cos(position * div_term)
-
-        self.emb = nn.Embedding(c_in, d_model)
-        self.emb.weight = nn.Parameter(w, requires_grad=False)
-
-    def forward(self, x):
-        return self.emb(x).detach()
+#     def forward(self, x, x_time):
+#         seq_len = x_time.size(1)
+#         device = x_time.device
+#         pos = x_time.squeeze(2)
+#         div_term = torch.exp(torch.arange(0, self.d_model, 2, dtype=torch.float) * -(math.log(10000.0) / self.d_model)).to(device)
+#         pos_enc = torch.zeros(seq_len, self.d_model).to(device)
+#         pos_enc[:, 0::2] = torch.sin(pos * div_term)
+#         pos_enc[:, 1::2] = torch.cos(pos * div_term)
+#         pos_enc = pos_enc.unsqueeze(0).expand(x_time.size(0), -1, -1)
+#         return x + pos_enc
 
 
-class TemporalEmbedding(nn.Module):
-    def __init__(self, d_model, embed_type='fixed', freq='h'):
-        super(TemporalEmbedding, self).__init__()
+# class PositionalEncoding(nn.Module):
+#     def __init__(self, d_model, max_len=10000):
+#         super(PositionalEncoding, self).__init__()
+#         pe = torch.zeros(max_len, d_model)
+#         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+#         div_term = torch.exp(
+#             torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+#         )
+#         pe[:, 0::2] = torch.sin(position * div_term)
+#         pe[:, 1::2] = torch.cos(position * div_term)
+#         pe = pe.unsqueeze(0).transpose(0, 1)
+#         # pe.requires_grad = False
+#         self.register_buffer("pe", pe)
 
-        minute_size = 4
-        hour_size = 24
-        weekday_size = 7
-        day_size = 32
-        month_size = 13
-
-        Embed = FixedEmbedding if embed_type == 'fixed' else nn.Embedding
-        if freq == 't':
-            self.minute_embed = Embed(minute_size, d_model)
-        self.hour_embed = Embed(hour_size, d_model)
-        self.weekday_embed = Embed(weekday_size, d_model)
-        self.day_embed = Embed(day_size, d_model)
-        self.month_embed = Embed(month_size, d_model)
-
-    def forward(self, x):
-        x = x.long()
-
-        minute_x = self.minute_embed(x[:, :, 4]) if hasattr(self, 'minute_embed') else 0.
-        hour_x = self.hour_embed(x[:, :, 3])
-        weekday_x = self.weekday_embed(x[:, :, 2])
-        day_x = self.day_embed(x[:, :, 1])
-        month_x = self.month_embed(x[:, :, 0])
-
-        return hour_x + weekday_x + day_x + month_x + minute_x
+#     def forward(self, x, x_time):
+#         return x + self.pe[:x_time.size(0), :]
 
 
-class TimeFeatureEmbedding(nn.Module):
-    def __init__(self, d_model, embed_type='timeF', freq='h'):
-        super(TimeFeatureEmbedding, self).__init__()
+class Time2Vec(nn.Module):
+    def __init__(self, d_model, seq_len=128):
+        super(Time2Vec, self).__init__()
+        self.d_model = d_model
+        self.seq_len = seq_len
+        self.w0 = nn.Parameter(torch.randn(1, 1, 1)) 
+        self.b0 = nn.Parameter(torch.randn(1, 1, 1))
+        self.w = nn.Parameter(torch.Tensor(1, 1, self.d_model-1))
+        self.b = nn.Parameter(torch.Tensor(1, 1, self.d_model-1))
+        self.reset_parameters()
 
-        freq_map = {'h': 4, 't': 5, 's': 6, 'm': 1, 'a': 1, 'w': 2, 'd': 3, 'b': 3}
-        d_inp = freq_map[freq]
-        self.embed = nn.Linear(d_inp, d_model, bias=False)
+    def reset_parameters(self):
+        nn.init.normal_(self.w)
+        nn.init.zeros_(self.b)
 
-    def forward(self, x):
-        return self.embed(x)
-
-
-class DataEmbedding(nn.Module):
-    def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
-        super(DataEmbedding, self).__init__()
-
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
-        self.position_embedding = PositionalEmbedding(d_model=d_model)
-        self.temporal_embedding = TemporalEmbedding(d_model=d_model, embed_type=embed_type,
-                                                    freq=freq) if embed_type != 'timeF' else TimeFeatureEmbedding(
-            d_model=d_model, embed_type=embed_type, freq=freq)
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, x, x_mark):
-        x = self.value_embedding(x) + self.temporal_embedding(x_mark) + self.position_embedding(x)
-        return self.dropout(x)
-
-
-class DataEmbedding_wo_pos(nn.Module):
-    def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
-        super(DataEmbedding_wo_pos, self).__init__()
-
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
-        self.position_embedding = PositionalEmbedding(d_model=d_model)
-        self.temporal_embedding = TemporalEmbedding(d_model=d_model, embed_type=embed_type,
-                                                    freq=freq) if embed_type != 'timeF' else TimeFeatureEmbedding(
-            d_model=d_model, embed_type=embed_type, freq=freq)
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, x, x_mark):
-        x = self.value_embedding(x) + self.temporal_embedding(x_mark)
-        return self.dropout(x)
+    def forward(self, x, x_time):
+        linear = x_time * self.w0 + self.b0
+        positional = torch.sin(x_time * self.w + self.b0)
+        t2v = torch.cat((linear, positional), 2)
+        return x + t2v

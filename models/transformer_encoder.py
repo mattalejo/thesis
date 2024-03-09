@@ -3,7 +3,7 @@ import torch.nn as nn
 from layers.embed import PositionalEncoding, Time2Vec
 
 
-class Transformer(nn.Module):
+class TransformerEncoder(nn.Module):
     """
     Transformer model
     """
@@ -16,10 +16,10 @@ class Transformer(nn.Module):
         nhead: int = 4,
         activation: str = "relu",
         batch_first: bool = True,
-        embed_mode: str = "t2v"
+        embed_mode: str = "pe"
     ):
-        super(Transformer, self).__init__()
-        self.model_type = "Transformer"
+        super(TransformerEncoder, self).__init__()
+        self.model_type = "Transformer Encoder"
         # self.src_mask = None
         if embed_mode == "pe":
             self.pos_encoder = PositionalEncoding(d_model)
@@ -35,23 +35,21 @@ class Transformer(nn.Module):
         #     d_model=d_model, nhead=decoder_head, dropout=dropout, activation=activation
         # )
         # self.decoder = 
-        self.transformer = nn.Transformer(d_model=d_model, nhead=nhead, num_encoder_layers=num_layers, num_decoder_layers=num_layers, dropout=dropout, activation=activation, batch_first=batch_first)
+        # self.transformer = nn.Transformer(d_model=d_model, nhead=nhead, num_encoder_layers=num_layers, num_decoder_layers=num_layers, dropout=dropout, activation=activation, batch_first=batch_first)
+        self.encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model=d_model, 
+                                       nhead=nhead, 
+                                       dropout=dropout, 
+                                       activation=activation
+                                        ),
+            num_layers=num_layers
+        )
         self.decoder = nn.Linear(d_model, 1)
 
-    def forward(self, src, tgt, src_time, tgt_time):
+    def forward(self, src, src_time, tgt=None, tgt_time=None):
         src = self.pos_encoder(src, src_time)
-        tgt = self.pos_encoder(tgt, tgt_time)
         
-        output = self.transformer(src, tgt)
+        output = self.encoder(src)
         output = self.decoder(output)
 
         return output
-
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = (
-            mask.float()
-            .masked_fill(mask == 0, float("-inf"))
-            .masked_fill(mask == 1, float(0.0))
-        )
-        return mask

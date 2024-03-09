@@ -8,48 +8,55 @@ import matplotlib.pyplot as plt
 
 from scaler import Scaler
 
-
 def log_returns(
     seq_len: int,
     horizon: int,
     ticker: str = "PSEI.PS",
     start_date: str = "2010-01-01",
-    end_date: str = "2020-12-31"
+    end_date: str = "2019-12-31"
 ):
     """
     Load the Log Returns dataset to a pd.DataFrame object
     """
-    idx = pd.date_range("1990-01-01", "2022-12-31")
+
+    idx = pd.date_range("1990-01-01", "2023-12-31")
     final_idx = pd.date_range(start_date, end_date)
 
-    df = yf.download([ticker], "1990-01-01", "2022-12-31")
-    print(df.head())
+    df = yf.download([ticker], "1990-01-01", "2023-12-31")
     df = df.reindex(idx)
     df.fillna(method="ffill", inplace=True)
 
-    df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
+    df["Timestamp"] = df.index.astype(int)
+    df["Timestamp"] = df["Timestamp"].apply(lambda x: float(x))/(86400*1_000_000_000)
 
-    returns = pd.DataFrame(df["Log Returns"]) 
-    # print(returns.tail())
-    # print(returns.shift(1).tail())
+    df["Log Returns"] = np.log(df["Adj Close"] / df["Adj Close"].shift(1))
+    df["Cumulative"] = np.exp(df["Log Returns"].cumsum())
+
+    df_columns = ["Timestamp", "Log Returns", "Cumulative"]
 
     scaler = Scaler(df)
 
-    dataset_df = pd.concat(
+    # Datasets: DataFrames,
+    datasets = dict()
+    X = dict()
+    y = dict()
+    
+
+    for column in df_columns:
+        datasets[column] =  pd.concat(
         [
-            pd.DataFrame(returns["Log Returns"]).rename(columns={"Log Returns": f"{i}"}).shift(i)
+            pd.DataFrame(df[column]).rename(columns={column: f"{i}"}).shift(i)
             for i in range(-horizon, seq_len)
         ], 
         axis=1)
+        datasets[column] = datasets[column].reindex(final_idx).dropna()
+        X[column] = datasets[column][[f"{i}" for i in range(0,seq_len)]]
+        y[column] = datasets[column][[f"{i}" for i in range(-horizon,0)]]
 
-    dataset_df = dataset_df.reindex(final_idx).dropna()
+    return datasets, X, y, scaler  # Tensors not yet scaled
 
-    X = dataset_df[[f"{i}" for i in range(0,seq_len)]]
-    y = dataset_df[[f"{i}" for i in range(-horizon,0)]]
-    
-    return (torch.Tensor(X.to_numpy()).unsqueeze(2), 
-        torch.Tensor(y.to_numpy()).unsqueeze(2), 
-        scaler)  # Tensors not yet scaled
+def to_tensor(df):
+    return torch.Tensor(df.to_numpy()).unsqueeze(2)
 
 
 def log_returns_w_close(

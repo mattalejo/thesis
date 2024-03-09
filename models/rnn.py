@@ -25,8 +25,9 @@ class RNN(nn.Module):
         )
         self.fc = nn.Linear(hidden_size, output_size)
 
-    def forward(self, src, tgt=None):  # x: (batch, seq_len, input_size)
+    def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # x: (batch, seq_len, input_size)
         # h0 = torch.zeros(1, x.size(0), self.hidden_size).to(x.device)  # Initial hidden state
+        src_time, tgt, tgt_time = None, None, None  # Garbage collection
         out, _ = self.rnn(src)  #, h0) 
         out = self.fc(out[:, -1:])  # , :])  # Get output from the last time step
         return out
