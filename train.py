@@ -172,8 +172,10 @@ def train(
         print(f"Epoch {epoch:03d} | train loss {train_loss:.4f} | test_loss {test_loss:.4f} | wall_time {wall_time:.4f} | process_time {proc_time:.4f}")
 
     # print(type(train_loss_list[1]), type(test_loss_list[1]))
-    df_train = pd.DataFrame(df_train)
-    df_test = pd.DataFrame(df_test)
+    if horizon == 1:
+        df_train = pd.DataFrame(df_train)
+        df_test = pd.DataFrame(df_test)
+        
     loss_df = pd.DataFrame(
         {
             "train_loss": train_loss_list,
