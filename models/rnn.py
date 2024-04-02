@@ -33,9 +33,6 @@ class RNN(nn.Module):
         return out
 
 
-import torch
-import torch.nn as nn
-
 class RNN5Day(nn.Module):
     """
     Recurrent Neural Network modified to output a sequence of a specified length (horizon).
