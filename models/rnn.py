@@ -9,7 +9,7 @@ class RNN(nn.Module):
         self, 
         input_size: int = 1,  # number of features
         hidden_size: int = 128, 
-        output_size: int = 1,
+        horizon: int = 1,
         num_layers: int = 4,
         dropout: float = 0.1,
         batch_first: bool = True
@@ -23,7 +23,7 @@ class RNN(nn.Module):
             dropout=dropout,
             num_layers=num_layers
         )
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.fc = nn.Linear(hidden_size, horizon)
 
     def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # x: (batch, seq_len, input_size)
         # h0 = torch.zeros(1, x.size(0), self.hidden_size).to(x.device)  # Initial hidden state
