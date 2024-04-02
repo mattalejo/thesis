@@ -46,8 +46,8 @@ class RNN5Day(nn.Module):
         dropout: float = 0.1,  # Dropout rate
         batch_first: bool = True  # If True, then the input and output tensors are provided as (batch, seq, feature)
     ):
-        super(RNN, self).__init__()
-        self.model_type = "RNN"
+        super(RNN5Day, self).__init__()
+        self.model_type = "RNN 5-day"
         self.hidden_size = hidden_size
         self.horizon = horizon  # Add horizon attribute
         self.batch_first = batch_first
