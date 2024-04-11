@@ -272,10 +272,12 @@ def test(
         ).cpu().detach().numpy()),
         "accuracy": {
             "bd": float(
-                (torch.sum(
-                    (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0
-                ))/torch.sum(
-                    (scaling.fit(y["Log Returns"].to(device))) != 0
+                (
+                    (torch.sum(
+                        (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0
+                    ))/torch.sum(
+                        (scaling.fit(y["Log Returns"].to(device))) != 0
+                    )
                 )
                 .cpu()
                 .detach().numpy()),
