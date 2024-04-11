@@ -271,12 +271,16 @@ def test(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
         ).cpu().detach().numpy()),
         "accuracy": {
-            "bau": float((torch.sum(torch.gt(
-                y_pred.to(device) * scaling.fit(y["Log Returns"].to(device)),
-                0
-            ))/torch.count_nonzero(scaling.fit(y["Log Returns"].to(device)))).cpu().detach().numpy()),
+            "bd": float(
+                (torch.sum(
+                    (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0
+                ))/torch.sum(
+                    (scaling.fit(y["Log Returns"].to(device))) != 0
+                )
+                .cpu()
+                .detach().numpy()),
             "ffill": float((torch.sum(
-                (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0
+                (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) >= 0
             )/(
                 scaling.fit(y["Log Returns"].to(device)).numel()
             )).cpu().detach().numpy())

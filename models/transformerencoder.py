@@ -48,7 +48,7 @@ class TransformerEncoder(nn.Module):
         # output = self.transformer_encoder(src, self.src_mask)
         # output = self.decoder(output)
         # print(f"output shape: {output.shape}")
-
+        tgt = None
         src = self.pos_encoder(src)
         # tgt = self.pos_encoder(tgt)
         output = self.encoder(src)
