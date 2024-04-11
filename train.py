@@ -273,7 +273,7 @@ def test(
         "counts": {
             "yhat*y > 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0).cpu().detach().numpy()),
             "yhat*y >= 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) >= 1e-9).cpu().detach().numpy()),
-            "y != 0": float(torch.sum((scaling.fit(y["Log Returns"].to(device))) >= 1e-9 or (scaling.fit(y["Log Returns"].to(device))) <= -1e-9).cpu().detach().numpy()),
+            "y != 0": float(torch.sum((torch.abs(scaling.fit(y["Log Returns"].to(device)))) >= 1e-9).cpu().detach().numpy()),
             "y": float(scaling.fit(y["Log Returns"].to(device)).numel())
         },
         "accuracy": {
