@@ -257,9 +257,6 @@ def test(
 
     count_y_pred= scaling.inverse_fit(y_pred.cpu()).detach().numpy()
     count_y = y["Log Returns"].cpu().detach().numpy()
-    y_size = 1
-    for i in list(count_y.size):
-        y_size *= i
 
     test_loss = {
         "mse": float(mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()),
@@ -278,7 +275,7 @@ def test(
         ).cpu().detach().numpy()),
         "accuracy": {
             "bd": float((count_y_pred > 0).sum() / (count_y != 0).sum()),
-            "ffill": float((count_y_pred >= 0).sum() / (y_size))
+            "ffill": float((count_y_pred >= 0).sum() / (np.size(count_y)))
         }
         
     }
