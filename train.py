@@ -258,7 +258,7 @@ def test(
     count_y_pred= scaling.inverse_fit(y_pred.cpu()).detach().numpy()
     count_y = y["Log Returns"].cpu().detach().numpy()
     y_size = 1
-    for i in count_y.size:
+    for i in list(count_y.size):
         y_size *= i
 
     test_loss = {
