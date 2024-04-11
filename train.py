@@ -270,6 +270,12 @@ def test(
         "rmse": float(torch.sqrt(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
         ).cpu().detach().numpy()),
+        "counts": {
+            "yhat*y > 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0).cpu().detach().numpy()),
+            "yhat*y >= 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) >= 0).cpu().detach().numpy()),
+            "y != 0": float(torch.sum((scaling.fit(y["Log Returns"].to(device))) != 0).cpu().detach().numpy()),
+            "y": float(scaling.fit(y["Log Returns"].to(device)).numel())
+        },
         "accuracy": {
             "bd": float(
                 (
