@@ -255,6 +255,12 @@ def test(
                 )
             print(y_pred.shape)
 
+    count_y_pred= scaling.inverse_fit(y_pred.cpu()).detach().numpy()
+    count_y = y["Log Returns"].cpu().detach().numpy()
+    y_size = 1
+    for i in count_y.size:
+        y_size *= i
+
     test_loss = {
         "mse": float(mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()),
         "mae": float(mae(y_pred.to(device), scaling.fit(y["Log Returns"].to(device))).cpu().detach().numpy()),
@@ -270,28 +276,9 @@ def test(
         "rmse": float(torch.sqrt(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
         ).cpu().detach().numpy()),
-        "counts": {
-            "yhat*y > 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0).cpu().detach().numpy()),
-            "yhat*y >= 0": float(torch.sum((y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) >= 1e-9).cpu().detach().numpy()),
-            "y != 0": float(torch.sum((torch.abs(scaling.fit(y["Log Returns"].to(device)))) >= 1e-9).cpu().detach().numpy()),
-            "y": float(scaling.fit(y["Log Returns"].to(device)).numel())
-        },
         "accuracy": {
-            "bd": float(
-                (
-                    (torch.sum(
-                        (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) > 0
-                    ))/torch.sum(
-                        (scaling.fit(y["Log Returns"].to(device))) != 0
-                    )
-                )
-                .cpu()
-                .detach().numpy()),
-            "ffill": float((torch.sum(
-                (y_pred.to(device) * scaling.fit(y["Log Returns"].to(device))) >= 0
-            )/(
-                scaling.fit(y["Log Returns"].to(device)).numel()
-            )).cpu().detach().numpy())
+            "bd": float((count_y_pred > 0).sum() / (count_y != 0).sum()),
+            "ffill": float((count_y_pred >= 0).sum() / (y_size))
         }
         
     }
