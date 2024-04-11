@@ -274,8 +274,8 @@ def test(
             mse(y_pred.to(device), scaling.fit(y["Log Returns"].to(device)))
         ).cpu().detach().numpy()),
         "accuracy": {
-            "bd": float((count_y_pred > 0).sum() / (count_y != 0).sum()),
-            "ffill": float((count_y_pred >= 0).sum() / (np.size(count_y)))
+            "bd": float(((count_y_pred * count_y) > 0).sum() / (count_y != 0).sum()),
+            "ffill": float(((count_y_pred * count_y) >= 0).sum() / (np.size(count_y)))
         }
         
     }
