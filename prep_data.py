@@ -53,7 +53,7 @@ def log_returns(
         if nan == "drop":
             datasets[column] = datasets[column].reindex(final_idx).dropna()
         elif nan == "fill":
-            datasets[column] = datasets[column].reindex(final_idx).fillna(0, inplace=True)
+            datasets[column] = datasets[column].fillna(0, inplace=True).reindex(final_idx)
         X[column] = datasets[column][[f"{i}" for i in range(0,seq_len)]]
         y[column] = datasets[column][[f"{i}" for i in range(-horizon,0)]]
 
