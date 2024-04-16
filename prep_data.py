@@ -47,15 +47,15 @@ def log_returns(
         datasets[column] =  pd.concat(
         [
             pd.DataFrame(df[column]).rename(columns={column: f"{i}"}).shift(i)
-            for i in range(-seq_len, horizon)
+            for i in range(-horizon, seq_len)
         ], 
         axis=1)
         if nan == "drop":
             datasets[column] = datasets[column].reindex(final_idx).dropna()
         elif nan == "fill":
             datasets[column] = datasets[column].reindex(final_idx).fillna(0)
-        X[column] = datasets[column][[f"{i}" for i in range(-seq_len, 0)]]
-        y[column] = datasets[column][[f"{i}" for i in range(0, horizon)]]
+        X[column] = datasets[column][[f"{i}" for i in range(0, seq_len)]]
+        y[column] = datasets[column][[f"{i}" for i in range(-horizon, 0)]]
 
     return datasets, X, y, scaler  # Tensors not yet scaled
 
