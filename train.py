@@ -203,7 +203,8 @@ def test(
     loss=nn.MSELoss(),
     lr=1e-4,
     scale_method="std",
-    device="cpu"
+    device="cpu",
+    nan="drop"
 ):
 
     mse = nn.MSELoss()
@@ -213,7 +214,8 @@ def test(
         seq_len=seq_len, 
         horizon=horizon,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        nan=nan
     )    
     for X_key, y_key in zip(X, y):
         X[X_key] = prep_data.to_tensor(X[X_key])
