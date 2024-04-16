@@ -29,7 +29,8 @@ def train(
     optimizer=optim.Adam, 
     lr=1e-4,
     scale_method="std",
-    device="cpu"
+    device="cpu",
+    nan: str = "drop"
 ):
 
     if end_date is None:
@@ -39,7 +40,8 @@ def train(
         seq_len=seq_len, 
         horizon=horizon,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        nan=nan
     )
 
     train_test = {

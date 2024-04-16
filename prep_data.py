@@ -13,7 +13,8 @@ def log_returns(
     horizon: int,
     ticker: str = "PSEI.PS",
     start_date: str = "2010-01-01",
-    end_date: str = "2019-12-31"
+    end_date: str = "2019-12-31",
+    nan: str = "drop"
 ):
     """
     Load the Log Returns dataset to a pd.DataFrame object
@@ -49,7 +50,10 @@ def log_returns(
             for i in range(-horizon, seq_len)
         ], 
         axis=1)
-        datasets[column] = datasets[column].reindex(final_idx).dropna()
+        if nan == "drop":
+            datasets[column] = datasets[column].reindex(final_idx).dropna()
+        elif nan == "fill":
+            datasets[column] = datasets[column].reindex(final_idx).fillna(0, inplace=True)
         X[column] = datasets[column][[f"{i}" for i in range(0,seq_len)]]
         y[column] = datasets[column][[f"{i}" for i in range(-horizon,0)]]
 
