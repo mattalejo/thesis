@@ -24,13 +24,17 @@ def train(
     max_epoch, 
     batch_size,
     start_date="2010-01-01",
-    end_date="2019-12-31",
+    end_date: str | None="2019-12-31",
     loss=nn.MSELoss(),
     optimizer=optim.Adam, 
     lr=1e-4,
     scale_method="std",
     device="cpu"
 ):
+
+    if end_date is None:
+        end_date = now.strftime(f"%Y-%m-%d")
+
     _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
         horizon=horizon,
