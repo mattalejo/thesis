@@ -26,6 +26,7 @@ class RNN(nn.Module):
         self.fc = nn.Linear(hidden_size, horizon)
 
     def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # x: (batch, seq_len, input_size)
+        print(src.shape)
         # h0 = torch.zeros(1, x.size(0), self.hidden_size).to(x.device)  # Initial hidden state
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
         out, _ = self.rnn(src)  #, h0) 
