@@ -28,6 +28,6 @@ class LSTM(nn.Module):
 
     def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # src: (batch, seq_len, input_size)
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
-        out, _ = self.lstm(src)
+        out, (hn, cn) = self.lstm(src)
         out = self.fc(out[:, -1, :])  # Get output from the last time step
         return out
