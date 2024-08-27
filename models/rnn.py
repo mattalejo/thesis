@@ -17,6 +17,7 @@ class RNN(nn.Module):
         super(RNN, self).__init__()
         self.model_type = "RNN"
         self.hidden_size = hidden_size
+        self.horizon = horizon  # Add horizon attribute
         self.rnn = nn.RNN(
             input_size=input_size, 
             hidden_size=hidden_size, 
