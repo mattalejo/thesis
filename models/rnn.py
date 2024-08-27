@@ -64,8 +64,11 @@ class RNN5Day(nn.Module):
     def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # x: (batch, seq_len, input_size)
         # h0 = torch.zeros(1, x.size(0), self.hidden_size).to(x.device)  # Initial hidden state
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
+        print(src.shape)
         out, _ = self.rnn(src)  # Process input through RNN
+        print(f"0. Output shape after RNN layer: {out.shape}")
         out = self.fc(out[:, -1, :])  # Apply the linear layer to the last time step of each sequence
+        print(f"1. Output shape after FC layer: {out.shape}")
         # Reshape output to match the desired output shape (batch_size, horizon, input_size)
         out = out.view(-1, self.horizon, 1)
         return out
