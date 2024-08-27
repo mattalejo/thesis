@@ -3,13 +3,13 @@ import torch.nn as nn
 
 class LSTM(nn.Module):
     """
-    Long Short-Term Memory Network
+    LSTM
     """
     def __init__(
         self, 
         input_size: int = 1,  # number of features
         hidden_size: int = 128, 
-        output_size: int = 1,
+        horizon: int = 1,
         num_layers: int = 4,
         dropout: float = 0.1,
         batch_first: bool = True
@@ -20,17 +20,14 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(
             input_size=input_size, 
             hidden_size=hidden_size, 
-            num_layers=num_layers,
             dropout=dropout,
-            batch_first=batch_first
+            num_layers=num_layers
         )
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.fc = nn.Linear(hidden_size, horizon)
 
-    def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # src: (batch, seq_len, input_size)
+    def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # x: (batch, seq_len, input_size)
+        # h0 = torch.zeros(1, x.size(0), self.hidden_size).to(x.device)  # Initial hidden state
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
-        print(f"0. Src shape: {src.shape}")
-        out, (hn, cn) = self.lstm(src)
-        print(f"1. Output shape after FC layer: {out.shape}")
-        out = self.fc(out[:, -1, :])  # Get output from the last time step
-        print(f"2. Output shape after FC layer: {out.shape}")
+        out, _ = self.lstm(src)  #, h0) 
+        out = self.fc(out[:, -1:])  # , :])  # Get output from the last time step
         return out
