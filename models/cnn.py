@@ -35,6 +35,7 @@ class CNN(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         x = self.fc3(x)
+        x = x.unsqueeze(1)
         # x = x.view(-1, horizon, num_features)  # Reshape to (batch, horizon, num_features)
         return x
 
