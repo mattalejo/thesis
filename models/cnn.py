@@ -14,13 +14,13 @@ class CNN(nn.Module):
     ):
         super(CNN, self).__init__()
         self.model_type = "CNN"
-        self.conv1 = nn.Conv1d(in_channels=input_size, out_channels=filters, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=filters, kernel_size=3, padding=1)
         self.pool1 = nn.MaxPool1d(kernel_size=2)
         self.conv2 = nn.Conv1d(in_channels=filters, out_channels=filters, kernel_size=3, padding=1)
         self.pool2 = nn.MaxPool1d(kernel_size=2)
         self.dropout1 = nn.Dropout(dropout)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(32 * (input_size // 4), 64)  # Adjust input size based on conv layers
+        self.fc1 = nn.Linear(filters * (input_size // 4), 64)  # Adjust input size based on conv layers
         self.dropout2 = nn.Dropout(dropout)
         self.fc2 = nn.Linear(64, 64)
         self.activation = nn.ReLU()
