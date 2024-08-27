@@ -26,7 +26,8 @@ class CNN(nn.Module):
         self.activation = nn.ReLU()
         self.fc3 = nn.Linear(64, output_size)
 
-    def forward(self, src, src_time=None, tgt=None, tgt_time=None):
+    def forward(self, src, src_time=None, tgt=None, tgt_time=None):\
+        print(src.shape)
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
         x = self.conv1(src)
         x = self.pool1(x)
