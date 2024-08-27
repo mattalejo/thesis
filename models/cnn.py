@@ -14,7 +14,7 @@ class CNN(nn.Module):
     ):
         super(CNN, self).__init__()
         self.model_type = "CNN"
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=filters, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv1d(in_channels=input_size, out_channels=filters, kernel_size=3, padding=1)
         self.pool1 = nn.MaxPool1d(kernel_size=2)
         self.conv2 = nn.Conv1d(in_channels=filters, out_channels=filters, kernel_size=3, padding=1)
         self.pool2 = nn.MaxPool1d(kernel_size=2)
