@@ -29,5 +29,7 @@ class LSTM(nn.Module):
     def forward(self, src, src_time=None, tgt=None, tgt_time=None):  # src: (batch, seq_len, input_size)
         src_time, tgt, tgt_time = None, None, None  # Garbage collection
         out, (hn, cn) = self.lstm(src)
+        print(f"0. Output shape after FC layer: {out.shape}")
         out = self.fc(out[:, -1, :])  # Get output from the last time step
+        print(f"1. Output shape after FC layer: {out.shape}")
         return out
