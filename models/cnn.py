@@ -9,6 +9,7 @@ import torch.nn as nn
 class CNN(nn.Module):
     def __init__(self, seq_len: int = 128, filters: int = 64, num_features: int = 1, horizon: int = 1, dropout: float = 0.1):
         super(CNN, self).__init__()
+        self.model_type = "CNN"
         self.conv1 = nn.Conv1d(in_channels=num_features, out_channels=filters, kernel_size=3)
         self.pool1 = nn.MaxPool1d(kernel_size=2)
         self.conv2 = nn.Conv1d(in_channels=filters, out_channels=filters, kernel_size=3)
