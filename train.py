@@ -26,7 +26,7 @@ def train(
     start_date="2010-01-01",
     end_date: str | None="2019-12-31",
     loss=nn.MSELoss(),
-    ticker="PSEI.PS"
+    ticker="PSEI.PS",
     optimizer=optim.Adam, 
     lr=1e-4,
     scale_method="std",
