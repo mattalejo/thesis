@@ -26,6 +26,7 @@ def train(
     start_date="2010-01-01",
     end_date: str | None="2019-12-31",
     loss=nn.MSELoss(),
+    ticker="PSEI.PS"
     optimizer=optim.Adam, 
     lr=1e-4,
     scale_method="std",
@@ -39,6 +40,7 @@ def train(
     _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
         horizon=horizon,
+        ticker=ticker,
         start_date=start_date,
         end_date=end_date,
         nan=nan
@@ -202,6 +204,7 @@ def test(
     end_date="2022-12-31",
     loss=nn.MSELoss(),
     lr=1e-4,
+    ticker="PSEI.PS",
     scale_method="std",
     device="cpu",
     nan="drop"
@@ -213,6 +216,7 @@ def test(
     _, X, y, scaling = prep_data.log_returns(
         seq_len=seq_len, 
         horizon=horizon,
+        ticker=ticker,
         start_date=start_date,
         end_date=end_date,
         nan=nan
